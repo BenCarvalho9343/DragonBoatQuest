@@ -27,7 +27,6 @@ const race = {
     this.distance = 0;
     this.finished = false;
     this.perfectStreak = 0;
-    // Show tutorial on first race
     if (!this.tutorialDismissed) {
       this.showTutorial = true;
       this.active = false;
@@ -72,12 +71,14 @@ const race = {
       this.finished = true;
       this.active = false;
       STATE.racedCaldecotte = true;
+      let rivalX = 20 + (this.distance * 0.85 / 500) * 400;
+      STATE.caldecotteResult = this.boatX > rivalX ? 'win' : 'loss';
+      STATE.trophyPoints += STATE.caldecotteResult === 'win' ? 10 : 3;
       STATE.save();
     }
   },
 
   tap() {
-    // Dismiss tutorial on first tap
     if (this.showTutorial) {
       this.dismissTutorial();
       return;
@@ -128,24 +129,17 @@ const race = {
   },
 
   drawTutorial(ctx) {
-    // Dim background
     ctx.fillStyle = 'rgba(0,0,0,0.82)';
     ctx.fillRect(0, 0, 480, 432);
-
-    // Tutorial box
     ctx.fillStyle = '#111';
     ctx.fillRect(60, 80, 360, 260);
     ctx.strokeStyle = '#f0c040';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(60, 80, 360, 260);
-
-    // Title
     ctx.fillStyle = '#f0c040';
     ctx.font = 'bold 13px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('HOW TO RACE', 240, 110);
-
-    // Divider
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -153,7 +147,6 @@ const race = {
     ctx.lineTo(400, 120);
     ctx.stroke();
 
-    // Instructions
     const lines = [
       { y: 148, col: '#f0c040', text: 'Yellow beats scroll from right to left.' },
       { y: 168, col: '#ffffff', text: 'Press SPACE when a beat reaches' },
@@ -172,7 +165,6 @@ const race = {
       ctx.fillText(l.text, 84, l.y);
     });
 
-    // Prompt
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'center';
@@ -182,10 +174,8 @@ const race = {
   draw(ctx) {
     if (!this.active && !this.finished && !this.showTutorial) return;
 
-    // Background
     ctx.fillStyle = '#1a5a8a';
     ctx.fillRect(0, 0, 480, 432);
-
     ctx.fillStyle = '#3a7d2c';
     ctx.fillRect(0, 0, 480, 40);
     ctx.fillRect(0, 320, 480, 112);
@@ -201,20 +191,17 @@ const race = {
     }
     ctx.setLineDash([]);
 
-    // Secklow boat
     ctx.fillStyle = '#8B1A1A';
     ctx.fillRect(this.boatX, 160, 48, 16);
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(this.boatX + 4, 163, 8, 10);
 
-    // Rival boat
     const rivalX = 20 + (this.distance * 0.85 / 500) * 400;
     ctx.fillStyle = '#1a1a8B';
     ctx.fillRect(rivalX, 190, 48, 16);
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(rivalX + 4, 193, 8, 10);
 
-    // Finish line
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.setLineDash([]);
@@ -227,7 +214,6 @@ const race = {
     ctx.textAlign = 'center';
     ctx.fillText('FINISH', 420, 36);
 
-    // Distance bar
     const distPct = Math.min(this.distance / 500, 1);
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(20, 330, 440, 8);
@@ -240,7 +226,6 @@ const race = {
     ctx.textAlign = 'right';
     ctx.fillText(Math.floor(this.distance) + 'm', 460, 348);
 
-    // Synergy gauge
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(20, 354, 200, 6);
     ctx.fillStyle = '#f0c040';
@@ -250,7 +235,6 @@ const race = {
     ctx.textAlign = 'left';
     ctx.fillText('SYNERGY', 228, 361);
 
-    // Rhythm lane
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(0, 370, 480, 32);
     ctx.strokeStyle = '#ffffff';
@@ -260,13 +244,11 @@ const race = {
     ctx.lineTo(60, 402);
     ctx.stroke();
 
-    // Beats
     this.beats.forEach(b => {
       ctx.fillStyle = b.hit ? '#1D9E75' : b.missed ? '#555' : '#f0c040';
       ctx.fillRect(b.x - 6, 378, 12, 16);
     });
 
-    // Grade text
     if (this.gradeTimer > 0) {
       const colours = {
         'PERFECT': '#f0c040',
@@ -281,7 +263,6 @@ const race = {
       ctx.fillText(this.gradeText, 240, 368);
     }
 
-    // Team labels
     ctx.font = '8px monospace';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffaaaa';
@@ -289,13 +270,11 @@ const race = {
     ctx.fillStyle = '#aaaaff';
     ctx.fillText('SOARING', rivalX, 188);
 
-    // Tutorial overlay
     if (this.showTutorial) {
       this.drawTutorial(ctx);
       return;
     }
 
-    // Finished screen
     if (this.finished) {
       ctx.fillStyle = 'rgba(0,0,0,0.75)';
       ctx.fillRect(80, 140, 320, 130);

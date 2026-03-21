@@ -6,19 +6,51 @@ const npcs = [
     width: 16,
     height: 16,
     colour: '#4a90d9',
-    lines: [
-      "Welcome to Secklow Hundred.",
-      "We haven't finished top three in four years.",
-      "You're going to help fix that. Probably.",
-      "Head to the dock and press Space to race.",
-      "Tap Space in time with the beat to power the boat.",
-      "Good luck. You'll need it.",
-    ],
+
+    get lines() {
+      // Before meeting Tim
+      if (!STATE.metTim) {
+        return [
+          "Welcome to Secklow Hundred.",
+          "We haven't finished top three in four years.",
+          "You're going to help fix that. Probably.",
+          "Head to the dock and press Space to race.",
+          "Tap Space in time with the beat to power the boat.",
+          "Good luck. You'll need it.",
+        ];
+      }
+      // After race — win
+      if (STATE.racedCaldecotte && STATE.caldecotteResult === 'win') {
+        return [
+          "Not bad. Not bad at all.",
+          "Soaring Dragons won't be happy about that.",
+          "We earned " + STATE.trophyPoints + " trophy points.",
+          "Loughborough is next. River Soar — tricky current.",
+          "Get some rest. Thursday, six AM.",
+        ];
+      }
+      // After race — loss
+      if (STATE.racedCaldecotte && STATE.caldecotteResult === 'loss') {
+        return [
+          "We lost. But we finished.",
+          "Soaring Dragons are good. We need to be better.",
+          "Still earned " + STATE.trophyPoints + " points for showing up.",
+          "Loughborough is next. River Soar — tricky current.",
+          "We'll be ready this time.",
+        ];
+      }
+      // Met Tim but hasn't raced yet
+      return [
+        "The dock is just south of here.",
+        "Press Space when you're on it to start the race.",
+        "Don't overthink it. Just feel the beat.",
+      ];
+    },
+
     currentLine: 0,
     active: false,
   }
 ];
-
 function updateNPCs(keys, player) {
   npcs.forEach(npc => {
     const dx = Math.abs(player.x - npc.x);
