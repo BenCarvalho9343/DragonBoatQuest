@@ -33,3 +33,7 @@ function drawMap(ctx) {
     });
   });
 }
+
+function isAtMapEdge(player) {
+  return player.x > 440;
+}

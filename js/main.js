@@ -15,16 +15,35 @@ window.addEventListener('keydown', e => {
   keys[e.key] = true;
   e.preventDefault();
 
-  // Open crew screen with C key
+  // Travel map
+  if (e.key === 'm' || e.key === 'M') {
+    if (!race.active && !race.showTutorial &&
+        !isDialogueActive() && !crewScreen.open &&
+        STATE.racedCaldecotte) {
+      if (travelMap.open) {
+        travelMap.close();
+      } else {
+        travelMap.open_map();
+      }
+    }
+    return;
+  }
+
+  // Pass keys to travel map if open
+  if (travelMap.open) {
+    travelMap.handleKey(e.key);
+    return;
+  }
+
+  // Crew screen
   if (e.key === 'c' || e.key === 'C') {
     if (!race.active && !race.showTutorial && !isDialogueActive()) {
       crewScreen.open = !crewScreen.open;
     }
-    crewScreen.handleKey(e.key);
     return;
   }
 
-  // Crew screen arrow navigation
+  // Crew screen navigation
   if (crewScreen.open) {
     crewScreen.handleKey(e.key);
     return;
@@ -68,8 +87,16 @@ function update(deltaTime, timestamp) {
     race.update(deltaTime, timestamp, keys);
     return;
   }
+  travelMap.update(deltaTime);
+  if (travelMap.open) return;
   player.update(deltaTime, keys);
   updateNPCs(keys, player);
+
+  // Auto open travel map at right edge after race
+  if (STATE.racedCaldecotte && isAtMapEdge(player) &&
+      !travelMap.open && !crewScreen.open) {
+    travelMap.open_map();
+  }
 }
 
 function draw() {
@@ -112,16 +139,32 @@ function draw() {
     ctx.fillStyle = '#aaaaaa';
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('Next race: Loughborough — coming soon', 240, 21);
+    ctx.fillText('Next race: Loughborough — head right for map', 240, 21);
+  }
+
+  // Edge prompt
+  if (STATE.racedCaldecotte && player.x > 380 && !travelMap.open) {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(100, 380, 280, 18);
+    ctx.fillStyle = '#f0c040';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Keep going → to open travel map', 240, 392);
   }
 
   crewScreen.draw(ctx);
+  travelMap.draw(ctx);
 
-  if (!crewScreen.open) {
+  // HUD hints
+  if (!crewScreen.open && !travelMap.open) {
     ctx.fillStyle = '#333';
     ctx.font = '8px monospace';
     ctx.textAlign = 'left';
     ctx.fillText('[ C ] crew', 8, 424);
+    if (STATE.racedCaldecotte) {
+      ctx.textAlign = 'right';
+      ctx.fillText('[ M ] map', 472, 424);
+    }
   }
 }
 

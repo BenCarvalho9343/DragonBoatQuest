@@ -3,7 +3,8 @@ const STATE = {
   venuesUnlocked: ['caldecotte'],
   metTim: false,
   racedCaldecotte: false,
-  caldecotteResult: null, // 'win' or 'loss'
+  caldecotteResult: null,
+  currentVenue: 'caldecotte',
 
   save() {
     localStorage.setItem('dbq_save', JSON.stringify({
@@ -12,6 +13,7 @@ const STATE = {
       metTim: this.metTim,
       racedCaldecotte: this.racedCaldecotte,
       caldecotteResult: this.caldecotteResult,
+      currentVenue: this.currentVenue,
     }));
   },
   load() {
