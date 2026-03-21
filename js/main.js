@@ -15,27 +15,34 @@ window.addEventListener('keydown', e => {
   keys[e.key] = true;
   e.preventDefault();
 
+  // Open crew screen with C key
+  if (e.key === 'c' || e.key === 'C') {
+    if (!race.active && !race.showTutorial && !isDialogueActive()) {
+      crewScreen.open = !crewScreen.open;
+    }
+    crewScreen.handleKey(e.key);
+    return;
+  }
+
+  // Crew screen arrow navigation
+  if (crewScreen.open) {
+    crewScreen.handleKey(e.key);
+    return;
+  }
+
   if (e.key === ' ') {
-    // Tutorial tap
     if (race.showTutorial) {
       race.tap();
       return;
     }
-
-    // Rhythm tap during race
     if (race.active) {
       race.tap();
       return;
     }
-
-    // Return from finished race
     if (race.finished) {
       race.finished = false;
       return;
     }
-
-    // Start race from dock — only if Tim has been spoken to
-    // and the race hasn't been done yet
     if (!isDialogueActive()) {
       const onDock = player.x > 64 && player.x < 160 &&
                      player.y > 96 && player.y < 160;
@@ -44,7 +51,6 @@ window.addEventListener('keydown', e => {
         return;
       }
       if (onDock && !STATE.metTim) {
-        // Nudge player to talk to Tim first
         npcs[0].active = true;
         npcs[0].currentLine = 0;
         return;
@@ -107,6 +113,15 @@ function draw() {
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Next race: Loughborough — coming soon', 240, 21);
+  }
+
+  crewScreen.draw(ctx);
+
+  if (!crewScreen.open) {
+    ctx.fillStyle = '#333';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('[ C ] crew', 8, 424);
   }
 }
 
