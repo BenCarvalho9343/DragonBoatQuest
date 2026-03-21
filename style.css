@@ -12,9 +12,10 @@ body {
   height: 100vh;
 }
 
-canvas {
+ccanvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  width: 960px;
-  height: 864px;
+  width: 800px;
+  height: 720px;
+  outline: none;
 }
