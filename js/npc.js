@@ -10,6 +10,9 @@ const npcs = [
       "Welcome to Secklow Hundred.",
       "We haven't finished top three in four years.",
       "You're going to help fix that. Probably.",
+      "Head to the dock and press Space to race.",
+      "Tap Space in time with the beat to power the boat.",
+      "Good luck. You'll need it.",
     ],
     currentLine: 0,
     active: false,
@@ -31,6 +34,11 @@ function updateNPCs(keys, player) {
         if (npc.currentLine >= npc.lines.length) {
           npc.active = false;
           npc.currentLine = 0;
+          // Mark Tim as met after finishing his dialogue
+          if (npc.name === 'Coach Tim') {
+            STATE.metTim = true;
+            STATE.save();
+          }
         }
       }
       npc.justPressed = true;
@@ -44,15 +52,16 @@ function updateNPCs(keys, player) {
 
 function drawNPCs(ctx) {
   npcs.forEach(npc => {
-    // Draw NPC as a coloured square
     ctx.fillStyle = npc.colour;
     ctx.fillRect(npc.x, npc.y, npc.width, npc.height);
 
-    // Draw a small indicator above their head when player is nearby
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '8px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('!', npc.x + 8, npc.y - 4);
+    // Only show ! if not yet met
+    if (npc.name === 'Coach Tim' && !STATE.metTim) {
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('!', npc.x + 8, npc.y - 4);
+    }
   });
 }
 
@@ -60,27 +69,18 @@ function drawDialogue(ctx) {
   const activeNPC = npcs.find(npc => npc.active);
   if (!activeNPC) return;
 
-  // Dialogue box background
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+  ctx.fillStyle = 'rgba(0,0,0,0.85)';
   ctx.fillRect(8, 380, 464, 44);
-
-  // Border
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 1;
   ctx.strokeRect(8, 380, 464, 44);
-
-  // Speaker name
   ctx.fillStyle = '#f0c040';
   ctx.font = 'bold 10px monospace';
   ctx.textAlign = 'left';
   ctx.fillText(activeNPC.name, 16, 394);
-
-  // Dialogue line
   ctx.fillStyle = '#ffffff';
   ctx.font = '10px monospace';
   ctx.fillText(activeNPC.lines[activeNPC.currentLine], 16, 410);
-
-  // Continue prompt
   ctx.fillStyle = '#aaaaaa';
   ctx.fillText('[ Space ] continue', 16, 420);
 }
