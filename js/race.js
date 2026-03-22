@@ -3,6 +3,7 @@ const race = {
   beats: [],
   bpm: 100,
   boatX: 20,
+  rivalDistance: 0,
   boatSpeed: 0,
   maxBoatSpeed: 60,
   lastBeatTime: 0,
@@ -60,6 +61,7 @@ const race = {
     this.synergyGauge = 0;
     this.distance = 0;
     this.finished = false;
+    this.rivalDistance = 0;
     this.perfectStreak = 0;
     this.bends = [];
     this.bendActive = false;
@@ -140,8 +142,13 @@ const race = {
 
     this.beats = this.beats.filter(b => b.x > -20);
 
-    this.distance += this.boatSpeed * deltaTime;
+this.distance += this.boatSpeed * deltaTime;
     this.boatX = 20 + (this.distance / this.maxDistance) * 400;
+
+    // Rival moves independently at a fixed speed
+    const rivalBaseSpeed = this.distanceMode === '200m' ? 28
+      : this.distanceMode === '2000m' ? 22 : 25;
+    this.rivalDistance += rivalBaseSpeed * deltaTime;
 
     if (this.gradeTimer > 0) this.gradeTimer -= deltaTime;
     if (this.bendGradeTimer > 0) this.bendGradeTimer -= deltaTime;
@@ -190,10 +197,10 @@ const race = {
       if (venue) {
         let result = 'loss';
 
-        if (venue.isFinale) {
+if (venue.isFinale) {
           const rivals = this.getRivalSpeeds();
           const rivalPositions = rivals.map(r =>
-            20 + (this.distance * r.speed / this.maxDistance) * 400
+            20 + (this.rivalDistance * r.speed / this.maxDistance) * 400
           );
           const position = rivalPositions.filter(
             rx => rx > this.boatX
@@ -214,8 +221,8 @@ const race = {
           }
           STATE.trophyPoints += result === 'win' ? 10 : 3;
         } else {
-          const rivalSpeed = this.getSingleRivalSpeed();
-          const rivalX = 20 + (this.distance * rivalSpeed /
+const rivalSpeed = this.getSingleRivalSpeed();
+          const rivalX = 20 + (this.rivalDistance * rivalSpeed /
             this.maxDistance) * 400;
           result = this.boatX > rivalX ? 'win' : 'loss';
           STATE[venue.raceStateFlag] = true;
@@ -402,9 +409,8 @@ const race = {
       const rivals = this.getRivalSpeeds();
       rivals.forEach((rival, i) => {
         const laneY = 48 + i * 38;
-        const rx = 20 + (this.distance * rival.speed /
+const rx = 20 + (this.rivalDistance * rival.speed /
           this.maxDistance) * 400;
-
         ctx.fillStyle = rival.colour;
         ctx.fillRect(rx, laneY + 6, 48, 7);
         ctx.fillRect(rx + 46, laneY + 7, 4, 5);
@@ -450,10 +456,9 @@ const race = {
       ctx.fillText('SECKLOW', Math.min(this.boatX, 390), seckY - 1);
 
     } else {
-      const singleSpeed = this.getSingleRivalSpeed();
-      const singleRivalX = 20 + (this.distance * singleSpeed /
+const singleSpeed = this.getSingleRivalSpeed();
+      const singleRivalX = 20 + (this.rivalDistance * singleSpeed /
         this.maxDistance) * 400;
-
       ctx.fillStyle = '#8B1A1A';
       ctx.fillRect(this.boatX, 164, 52, 8);
       ctx.fillStyle = '#6B0A0A';
@@ -621,8 +626,8 @@ const race = {
         ctx.fillText(wins + ' final' + (wins !== 1 ? 's' : '') +
           ' won so far', 240, 197);
       } else {
-        const singleSpeed = this.getSingleRivalSpeed();
-        const finalRivalX = 20 + (this.distance * singleSpeed /
+const singleSpeed = this.getSingleRivalSpeed();
+        const finalRivalX = 20 + (this.rivalDistance * singleSpeed /
           this.maxDistance) * 400;
         const won = this.boatX > finalRivalX;
         ctx.fillStyle = won ? '#f0c040' : '#aaaaaa';
