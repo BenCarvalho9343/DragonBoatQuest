@@ -108,15 +108,15 @@ const VENUES = {
         },
       },
       {
-        name: 'River Marshal',
+        name: 'holly',
         x: 120, y: 60,
-        colour: '#ffaa00',
+        colour: '#cc2222',
         get lines() {
           return [
-            "Welcome to the River Soar.",
-            "Watch the current on the far bank — it pulls left.",
-            "Soaring Dragons have home advantage here.",
-            "But home advantage only gets you so far.",
+            "67",
+            "67 67",
+            "67 67 67",
+            "67 67 67 67",
           ];
         },
       },

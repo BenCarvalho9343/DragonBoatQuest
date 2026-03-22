@@ -32,7 +32,18 @@ const NPC_APPEARANCES = {
     kitSecondary:  '#ffffff',
     eyeColour:     '#3a2a1a',
     hairHighlight: '#8B6914',
+    },
+   
+    'holly': {
+    skinColour:    '#f4c07a',
+    hairColour:    '#4a2a0a',
+    hairStyle:     'ponytail',
+    kitColour:     '#cc2222',
+    kitSecondary:  '#ffffff',
+    eyeColour:     '#3a2a1a',
+    hairHighlight: '#8B6914',
   },
+  
   'Anaconda Captain': {
     skinColour:    '#c68642',
     hairColour:    '#1a1a1a',
