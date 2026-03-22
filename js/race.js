@@ -208,16 +208,61 @@ const race = {
     }
     ctx.setLineDash([]);
 
+// Secklow boat hull
     ctx.fillStyle = '#8B1A1A';
-    ctx.fillRect(this.boatX, 160, 48, 16);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(this.boatX + 4, 163, 8, 10);
+    ctx.fillRect(this.boatX, 164, 52, 8);
+    // Bow point
+    ctx.fillStyle = '#6B0A0A';
+    ctx.fillRect(this.boatX + 50, 165, 4, 6);
+    // Stern
+    ctx.fillStyle = '#6B0A0A';
+    ctx.fillRect(this.boatX - 2, 165, 4, 6);
+    // Paddlers (tiny figures)
+    for (let p = 0; p < 4; p++) {
+      const px = this.boatX + 6 + p * 11;
+      // Body
+      ctx.fillStyle = '#8B1A1A';
+      ctx.fillRect(px, 158, 4, 6);
+      // Head
+      ctx.fillStyle = '#f4c07a';
+      ctx.fillRect(px + 1, 155, 3, 4);
+      // Paddle left side
+      ctx.fillStyle = '#8B6914';
+      ctx.fillRect(px - 2, 160, 2, 6);
+      // Paddle right side
+      ctx.fillStyle = '#8B6914';
+      ctx.fillRect(px + 4, 160, 2, 6);
+    }
+    // Drummer at front
+    ctx.fillStyle = '#f4c07a';
+    ctx.fillRect(this.boatX + 2, 156, 3, 4);
+    ctx.fillStyle = '#f0c040';
+    ctx.fillRect(this.boatX + 1, 158, 5, 5);
 
-    const rivalX = 20 + (this.distance * 0.85 / 500) * 400;
+const rivalX = 20 + (this.distance * 0.85 / 500) * 400;
+    // Rival boat hull
     ctx.fillStyle = '#1a1a8B';
-    ctx.fillRect(rivalX, 190, 48, 16);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(rivalX + 4, 193, 8, 10);
+    ctx.fillRect(rivalX, 194, 52, 8);
+    ctx.fillStyle = '#0a0a6B';
+    ctx.fillRect(rivalX + 50, 195, 4, 6);
+    ctx.fillStyle = '#0a0a6B';
+    ctx.fillRect(rivalX - 2, 195, 4, 6);
+    // Rival paddlers
+    for (let p = 0; p < 4; p++) {
+      const px = rivalX + 6 + p * 11;
+      ctx.fillStyle = '#1a1a8B';
+      ctx.fillRect(px, 188, 4, 6);
+      ctx.fillStyle = '#c68642';
+      ctx.fillRect(px + 1, 185, 3, 4);
+      ctx.fillStyle = '#8B6914';
+      ctx.fillRect(px - 2, 190, 2, 6);
+      ctx.fillStyle = '#8B6914';
+      ctx.fillRect(px + 4, 190, 2, 6);
+    }
+    ctx.fillStyle = '#c68642';
+    ctx.fillRect(rivalX + 2, 186, 3, 4);
+    ctx.fillStyle = '#cc2222';
+    ctx.fillRect(rivalX + 1, 188, 5, 5);
 
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;

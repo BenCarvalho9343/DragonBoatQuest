@@ -1,10 +1,44 @@
+const NPC_APPEARANCES = {
+  'Coach Tim': {
+    skinColour:   '#f4a460',
+    hairColour:   '#888888',
+    kitColour:    '#2255aa',
+    kitSecondary: '#ffffff',
+  },
+  'Soaring Captain': {
+    skinColour:   '#c68642',
+    hairColour:   '#1a1a1a',
+    kitColour:    '#cc2222',
+    kitSecondary: '#000000',
+  },
+  'River Marshal': {
+    skinColour:   '#ffe4c4',
+    hairColour:   '#ffaa00',
+    kitColour:    '#ffaa00',
+    kitSecondary: '#ffffff',
+  },
+  'Ada': {
+    skinColour:   '#f4c07a',
+    hairColour:   '#4a2a0a',
+    kitColour:    '#cc2222',
+    kitSecondary: '#ffffff',
+  },
+};
+
+const DEFAULT_APPEARANCE = {
+  skinColour:   '#f4c07a',
+  hairColour:   '#3a2a1a',
+  kitColour:    '#446688',
+  kitSecondary: '#ffffff',
+};
+
 function getVenueNPCs() {
   const venue = VENUES[STATE.currentVenue];
   return venue ? venue.npcs : VENUES.caldecotte.npcs;
 }
 
-let activeNPCIndex = null;
-let activeLineIndex = 0;
+var activeNPCIndex = null;
+var activeLineIndex = 0;
 
 function updateNPCs(keys, player) {
   const npcs = getVenueNPCs();
@@ -38,14 +72,22 @@ function updateNPCs(keys, player) {
 function drawNPCs(ctx) {
   const npcs = getVenueNPCs();
   npcs.forEach((npc, i) => {
-    ctx.fillStyle = npc.colour;
-    ctx.fillRect(npc.x, npc.y, 16, 16);
+    const appearance = NPC_APPEARANCES[npc.name] || DEFAULT_APPEARANCE;
+    drawCharacter(ctx, npc.x, npc.y, appearance);
+
     if (activeNPCIndex !== i) {
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '8px monospace';
+      ctx.fillStyle = '#f0c040';
+      ctx.font = 'bold 10px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('!', npc.x + 8, npc.y - 4);
+      ctx.fillText('!', npc.x + 8, npc.y - 6);
     }
+
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(npc.x - 10, npc.y - 18, 36, 10);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '7px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(npc.name.split(' ')[0], npc.x + 8, npc.y - 10);
   });
 }
 
