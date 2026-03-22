@@ -121,9 +121,9 @@ const VENUES = {
         },
       },
       {
-        name: 'Ada, Local Paddler',
+        name: 'Ada',
         x: 200, y: 112,
-        colour: '#88aaff',
+        colour: '#cc2244',
         get lines() {
           if (!STATE.racedLoughborough) {
             return [
@@ -146,7 +146,8 @@ const VENUES = {
     raceStateFlag: 'racedLoughborough',
     raceResultFlag: 'loughboroughResult',
   },
-   nottingham: {
+
+  nottingham: {
     name: 'River Trent, Nottingham',
     bgColour: '#1a1200',
     mapData: [
@@ -226,8 +227,253 @@ const VENUES = {
     raceRival: 'Notts Anaconda',
     raceStateFlag: 'racedNottingham',
     raceResultFlag: 'nottinghamResult',
-  } 
+  },
 
+  stneots: {
+    name: 'River Great Ouse, St Neots',
+    bgColour: '#1a3a1a',
+    mapData: [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,0],
+      [0,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,8,0],
+      [0,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,9,9,9,9,1,1,1,8,0],
+      [0,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,9,9,9,9,1,1,1,8,0],
+      [0,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,8,0],
+      [0,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,8,0],
+      [0,8,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,8,0],
+      [0,8,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,8,0],
+      [0,8,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,8,0],
+      [0,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ],
+    npcs: [
+      {
+        name: 'St Neots Captain',
+        x: 320, y: 80,
+        colour: '#2255cc',
+        get lines() {
+          if (!STATE.racedStneots) {
+            return [
+              "Welcome to the Regatta Meadow.",
+              "We've been racing here since 1997.",
+              "The Ouse looks calm. Don't be fooled.",
+              "Flat water is fast water. We know it well.",
+            ];
+          }
+          if (STATE.stneotResult === 'win') {
+            return [
+              "Well done. The Ouse was kind to you.",
+              "Come back next year — we'll be ready.",
+            ];
+          }
+          return [
+            "Home water. Every time.",
+            "Safe travels back to Milton Keynes.",
+          ];
+        },
+      },
+      {
+        name: 'Festival MC',
+        x: 120, y: 60,
+        colour: '#44cc44',
+        get lines() {
+          return [
+            "Welcome to the St Neots Dragon Boat Festival!",
+            "Food stalls open until six, racing until five.",
+            "St Neots DBT — founded 1997, still going strong.",
+            "Enjoy the Ouse, enjoy the day!",
+          ];
+        },
+      },
+      {
+        name: 'Local Fan',
+        x: 200, y: 112,
+        colour: '#88ccff',
+        get lines() {
+          if (!STATE.racedStneots) {
+            return [
+              "St Neots are deceptively consistent.",
+              "No flashy surges — just relentless pace.",
+              "The 2000m is where they really shine.",
+              "Watch your bend technique on the far turn.",
+            ];
+          }
+          return [
+            "Brilliant race. The crowd loved it.",
+            "You'll always be welcome here.",
+          ];
+        },
+      },
+    ],
+    dockBounds: { x1: 64, x2: 160, y1: 96, y2: 160 },
+    raceRival: 'St Neots DBT',
+    raceStateFlag: 'racedStneots',
+    raceResultFlag: 'stneotResult',
+  },
 
+  middlesbrough: {
+    name: 'Teesside, Middlesbrough',
+    bgColour: '#1a1a2a',
+    mapData: [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,0],
+      [0,10,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,10,0],
+      [0,10,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,11,11,11,1,1,1,10,0],
+      [0,10,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,11,11,11,1,1,1,10,0],
+      [0,10,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,10,0],
+      [0,10,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,10,0],
+      [0,10,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,10,0],
+      [0,10,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,10,0],
+      [0,10,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,10,0],
+      [0,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ],
+    npcs: [
+      {
+        name: 'Powerhouse Captain',
+        x: 320, y: 80,
+        colour: '#ff6600',
+        get lines() {
+          if (!STATE.racedMiddlesbrough) {
+            return [
+              "Secklow. Southern club.",
+              "Hope you packed a jacket.",
+              "Wind off the Tees is something else.",
+              "We'll see how you handle it.",
+            ];
+          }
+          if (STATE.middlesbroughResult === 'win') {
+            return [
+              "Fair enough. Good sprint.",
+              "Come back in January. Different story.",
+            ];
+          }
+          return [
+            "Northern water. Northern result.",
+            "No shame in it.",
+          ];
+        },
+      },
+      {
+        name: 'Tees Marshal',
+        x: 120, y: 60,
+        colour: '#aaaaaa',
+        get lines() {
+          return [
+            "Welcome to Teesside.",
+            "Wind forecast is strong from the north today.",
+            "Powerhouse Dragons train in all weathers.",
+            "They actually prefer it rough.",
+          ];
+        },
+      },
+      {
+        name: 'Steel Worker',
+        x: 200, y: 112,
+        colour: '#ff9944',
+        get lines() {
+          if (!STATE.racedMiddlesbrough) {
+            return [
+              "Powerhouse are unstoppable in the 200m.",
+              "Fastest start in the league. By a distance.",
+              "But they fade in the 2000m — hit the bends hard.",
+              "That's where you can take them.",
+            ];
+          }
+          return [
+            "Good effort against Powerhouse.",
+            "Not many clubs come up here and race like that.",
+          ];
+        },
+      },
+    ],
+    dockBounds: { x1: 64, x2: 160, y1: 96, y2: 160 },
+    raceRival: 'Powerhouse Dragons',
+    raceStateFlag: 'racedMiddlesbrough',
+    raceResultFlag: 'middlesbroughResult',
+  },
 
+  liverpool: {
+    name: 'Merseyside, Liverpool',
+    bgColour: '#0a0a2a',
+    mapData: [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,0],
+      [0,12,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,12,0],
+      [0,12,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,13,13,13,13,1,1,1,12,0],
+      [0,12,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,13,13,13,13,1,1,1,12,0],
+      [0,12,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,12,0],
+      [0,12,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,12,0],
+      [0,12,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,12,0],
+      [0,12,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,12,0],
+      [0,12,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,12,0],
+      [0,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ],
+    npcs: [
+      {
+        name: 'Amathus Captain',
+        x: 320, y: 80,
+        colour: '#cc0000',
+        get lines() {
+          if (!STATE.racedLiverpool) {
+            return [
+              "Secklow Hundred. We know your club.",
+              "We raced at the World Championships in 1995.",
+              "This is not a warm-up. This is the real thing.",
+              "Show us what Milton Keynes is made of.",
+            ];
+          }
+          if (STATE.liverpoolResult === 'win') {
+            return [
+              "Extraordinary. Genuinely.",
+              "We haven't been beaten here in three years.",
+              "London will be something special.",
+            ];
+          }
+          return [
+            "Well raced. You gave us a fight.",
+            "London is next. We'll both be ready.",
+            "May the best crew win.",
+          ];
+        },
+      },
+      {
+        name: 'Dock Marshal',
+        x: 120, y: 60,
+        colour: '#4444cc',
+        get lines() {
+          return [
+            "Welcome to Merseyside.",
+            "Amathus have been racing since the early 90s.",
+            "One of the founding clubs of British dragon boating.",
+            "You're racing history today.",
+          ];
+        },
+      },
+      {
+        name: 'Mersey Local',
+        x: 200, y: 112,
+        colour: '#6688ff',
+        get lines() {
+          if (!STATE.racedLiverpool) {
+            return [
+              "Amathus are complete. No weak phase.",
+              "Power, rhythm, stamina — all elite.",
+              "The 2000m bends are their strongest point.",
+              "You'll need perfect lines to stay with them.",
+            ];
+          }
+          return [
+            "That was one of the best races I've seen here.",
+            "London's going to be electric.",
+          ];
+        },
+      },
+    ],
+    dockBounds: { x1: 64, x2: 160, y1: 96, y2: 160 },
+    raceRival: 'Amathus',
+    raceStateFlag: 'racedLiverpool',
+    raceResultFlag: 'liverpoolResult',
+  },
 };

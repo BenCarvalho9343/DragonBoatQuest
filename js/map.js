@@ -1,16 +1,21 @@
 const TILE_SIZE = 16;
 
 const COLOURS = {
-  0: '#1a6b9e',
-  1: '#3a7d2c',
-  2: '#8B6914',
-  3: '#5a4a3a',
-  4: '#2a6a3a',
-  5: '#4a3a2a',
-  6: '#2a2000',  // Trent river bank — dark amber
-  7: '#3a2a1a',  // Anaconda club hut
+  0:  '#1a6b9e',  // water
+  1:  '#3a7d2c',  // grass
+  2:  '#8B6914',  // dock planks
+  3:  '#5a4a3a',  // caldecotte club hut
+  4:  '#2a6a3a',  // loughborough river bank
+  5:  '#4a3a2a',  // loughborough rival hut
+  6:  '#2a2000',  // nottingham river bank
+  7:  '#3a2a1a',  // nottingham rival hut
+  8:  '#3a5a2a',  // st neots meadow bank
+  9:  '#2a4a1a',  // st neots rival hut
+  10: '#2a2a3a',  // middlesbrough industrial bank
+  11: '#3a3a4a',  // middlesbrough rival hut
+  12: '#0a1a3a',  // liverpool dock bank
+  13: '#1a0a0a',  // liverpool rival hut
 };
-
 
 function getMapData() {
   const venue = VENUES[STATE.currentVenue];

@@ -3,9 +3,22 @@ const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
 const keys = {};
+
+// Race distance selection
+let selectedDistance = '500m';
+const distances = ['200m', '500m', '2000m'];
+
 window.addEventListener('keydown', e => {
   keys[e.key] = true;
   e.preventDefault();
+
+  // Z key — bend mechanic
+  if (e.key === 'z' || e.key === 'Z') {
+    if (race.active && race.distanceMode === '2000m') {
+      race.tapBend();
+    }
+    return;
+  }
 
   // Travel map toggle
   if (e.key === 'm' || e.key === 'M') {
@@ -44,6 +57,22 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // Distance selector on dock — Tab cycles through distances
+  if (e.key === 'Tab') {
+    const venue = VENUES[STATE.currentVenue];
+    if (venue) {
+      const b = venue.dockBounds;
+      const onDock = player.x > b.x1 && player.x < b.x2 &&
+                     player.y > b.y1 && player.y < b.y2;
+      const alreadyRaced = STATE[venue.raceStateFlag];
+      if (onDock && !alreadyRaced) {
+        const idx = distances.indexOf(selectedDistance);
+        selectedDistance = distances[(idx + 1) % distances.length];
+      }
+    }
+    return;
+  }
+
   // Space actions
   if (e.key === ' ') {
     if (race.showTutorial) {
@@ -65,10 +94,11 @@ window.addEventListener('keydown', e => {
         const onDock = player.x > b.x1 && player.x < b.x2 &&
                        player.y > b.y1 && player.y < b.y2;
         const alreadyRaced = STATE[venue.raceStateFlag];
-        const needsTim = STATE.currentVenue === 'caldecotte' && !STATE.metTim;
+        const needsTim = STATE.currentVenue === 'caldecotte' &&
+                         !STATE.metTim;
 
         if (onDock && !alreadyRaced && !needsTim) {
-          race.start();
+          race.start(selectedDistance);
           return;
         }
         if (onDock && needsTim) {
@@ -87,7 +117,7 @@ window.addEventListener('keyup', e => {
 
 function update(deltaTime, timestamp) {
   if (race.active) {
-    race.update(deltaTime, timestamp, keys);
+    race.update(deltaTime, timestamp);
     return;
   }
   travelMap.update(deltaTime);
@@ -125,16 +155,42 @@ function draw() {
     const onDock = player.x > b.x1 && player.x < b.x2 &&
                    player.y > b.y1 && player.y < b.y2;
     const alreadyRaced = STATE[venue.raceStateFlag];
-    const needsTim = STATE.currentVenue === 'caldecotte' && !STATE.metTim;
+    const needsTim = STATE.currentVenue === 'caldecotte' &&
+                     !STATE.metTim;
 
     if (onDock && !alreadyRaced && !needsTim) {
-      ctx.fillStyle = 'rgba(0,0,0,0.7)';
-      ctx.fillRect(80, 8, 320, 20);
-      ctx.fillStyle = '#ffffff';
+      // Distance selector
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(60, 6, 360, 34);
+      ctx.strokeStyle = '#f0c040';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(60, 6, 360, 34);
+
+      ctx.fillStyle = '#aaaaaa';
       ctx.font = '8px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('[ Space ] Race — Secklow vs ' + venue.raceRival, 240, 21);
+      ctx.fillText('[ Tab ] change distance    [ Space ] race', 240, 18);
+
+      // Distance options
+      distances.forEach((d, i) => {
+        const dx = 110 + i * 100;
+        const isSelected = d === selectedDistance;
+        ctx.fillStyle = isSelected ? '#f0c040' : '#555';
+        ctx.font = isSelected ? 'bold 10px monospace' : '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(d, dx, 32);
+        if (isSelected) {
+          ctx.fillStyle = '#f0c040';
+          ctx.fillRect(dx - 12, 34, 24, 2);
+        }
+      });
+
+     ctx.fillStyle = '#aaaaaa';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('vs ' + venue.raceRival, 410, 18);
     }
+
     if (onDock && needsTim) {
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(80, 8, 320, 20);
@@ -143,6 +199,7 @@ function draw() {
       ctx.textAlign = 'center';
       ctx.fillText('Talk to Coach Tim first', 240, 21);
     }
+
     if (onDock && alreadyRaced) {
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(80, 8, 320, 20);

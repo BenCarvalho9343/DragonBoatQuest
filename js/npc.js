@@ -1,52 +1,26 @@
 const NPC_APPEARANCES = {
-  'Coach Tim': {
-    skinColour:   '#f4a460',
-    hairColour:   '#888888',
-    kitColour:    '#2255aa',
-    kitSecondary: '#ffffff',
-  },
-  'Soaring Captain': {
-    skinColour:   '#c68642',
-    hairColour:   '#1a1a1a',
-    kitColour:    '#cc2222',
-    kitSecondary: '#000000',
-  },
-  'River Marshal': {
-    skinColour:   '#ffe4c4',
-    hairColour:   '#ffaa00',
-    kitColour:    '#ffaa00',
-    kitSecondary: '#ffffff',
-  },
-  'Ada': {
-    skinColour:   '#f4c07a',
-    hairColour:   '#4a2a0a',
-    kitColour:    '#cc2222',
-    kitSecondary: '#ffffff',
-  },
-  'Anaconda Captain': {
-    skinColour:   '#c68642',
-    hairColour:   '#1a1a1a',
-    kitColour:    '#6600aa',
-    kitSecondary: '#ffffff',
-  },
-  'Trent Marshal': {
-    skinColour:   '#ffe4c4',
-    hairColour:   '#cc8800',
-    kitColour:    '#cc8800',
-    kitSecondary: '#ffffff',
-  },
-  'Supporter': {
-    skinColour:   '#f4c07a',
-    hairColour:   '#2a1a0a',
-    kitColour:    '#cc8800',
-    kitSecondary: '#1a1200',
-  },
+  'Coach Tim':          { skinColour:'#f4a460', hairColour:'#888888', kitColour:'#2255aa', kitSecondary:'#ffffff' },
+  'Soaring Captain':    { skinColour:'#c68642', hairColour:'#1a1a1a', kitColour:'#cc2222', kitSecondary:'#000000' },
+  'River Marshal':      { skinColour:'#ffe4c4', hairColour:'#ffaa00', kitColour:'#ffaa00', kitSecondary:'#ffffff' },
+  'Ada':                { skinColour:'#f4c07a', hairColour:'#4a2a0a', kitColour:'#cc2222', kitSecondary:'#ffffff' },
+  'Anaconda Captain':   { skinColour:'#c68642', hairColour:'#1a1a1a', kitColour:'#6600aa', kitSecondary:'#ffffff' },
+  'Trent Marshal':      { skinColour:'#ffe4c4', hairColour:'#cc8800', kitColour:'#cc8800', kitSecondary:'#ffffff' },
+  'Supporter':          { skinColour:'#f4c07a', hairColour:'#2a1a0a', kitColour:'#cc8800', kitSecondary:'#1a1200' },
+  'St Neots Captain':   { skinColour:'#ffe4c4', hairColour:'#884422', kitColour:'#2255cc', kitSecondary:'#ffffff' },
+  'Festival MC':        { skinColour:'#f4c07a', hairColour:'#1a1a1a', kitColour:'#44cc44', kitSecondary:'#ffffff' },
+  'Local Fan':          { skinColour:'#c68642', hairColour:'#3a2a1a', kitColour:'#2255cc', kitSecondary:'#88ccff' },
+  'Powerhouse Captain': { skinColour:'#f4a460', hairColour:'#1a1a1a', kitColour:'#ff6600', kitSecondary:'#ffffff' },
+  'Tees Marshal':       { skinColour:'#ffe4c4', hairColour:'#aaaaaa', kitColour:'#888888', kitSecondary:'#ffffff' },
+  'Steel Worker':       { skinColour:'#c68642', hairColour:'#2a1a0a', kitColour:'#ff9944', kitSecondary:'#1a1a2a' },
+  'Amathus Captain':    { skinColour:'#c68642', hairColour:'#1a1a1a', kitColour:'#cc0000', kitSecondary:'#ffffff' },
+  'Dock Marshal':       { skinColour:'#ffe4c4', hairColour:'#4444cc', kitColour:'#4444cc', kitSecondary:'#ffffff' },
+  'Mersey Local':       { skinColour:'#f4c07a', hairColour:'#1a1a1a', kitColour:'#6688ff', kitSecondary:'#ffffff' },
 };
 
 const DEFAULT_APPEARANCE = {
-  skinColour:   '#f4c07a',
-  hairColour:   '#3a2a1a',
-  kitColour:    '#446688',
+  skinColour: '#f4c07a',
+  hairColour: '#3a2a1a',
+  kitColour:  '#446688',
   kitSecondary: '#ffffff',
 };
 
@@ -60,7 +34,6 @@ var activeLineIndex = 0;
 
 function updateNPCs(keys, player) {
   const npcs = getVenueNPCs();
-
   npcs.forEach((npc, i) => {
     const dx = Math.abs(player.x - npc.x);
     const dy = Math.abs(player.y - npc.y);
