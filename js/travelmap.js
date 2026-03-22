@@ -5,6 +5,9 @@ const travelMap = {
   travelTimer: 0,
   travelDuration: 2.5,
   travelProgress: 0,
+  fromX: 230,
+  fromY: 280,
+  destinationId: null,
 
   venues: [
     {
@@ -12,7 +15,6 @@ const travelMap = {
       name: 'Caldecotte Lake',
       subtitle: 'Milton Keynes — Home',
       x: 230, y: 280,
-      rival: 'Secklow Hundred',
       unlocked: true,
       completed: false,
     },
@@ -21,7 +23,6 @@ const travelMap = {
       name: 'River Soar',
       subtitle: 'Loughborough — Soaring Dragons',
       x: 245, y: 230,
-      rival: 'Soaring Dragons',
       unlocked: false,
       completed: false,
     },
@@ -30,7 +31,6 @@ const travelMap = {
       name: 'River Trent',
       subtitle: 'Nottingham — Notts Anaconda',
       x: 255, y: 215,
-      rival: 'Notts Anaconda',
       unlocked: false,
       completed: false,
     },
@@ -39,7 +39,6 @@ const travelMap = {
       name: 'River Great Ouse',
       subtitle: 'St Neots — St Neots DBT',
       x: 260, y: 265,
-      rival: 'St Neots DBT',
       unlocked: false,
       completed: false,
     },
@@ -48,7 +47,6 @@ const travelMap = {
       name: 'Teesside',
       subtitle: 'Middlesbrough — Powerhouse',
       x: 240, y: 155,
-      rival: 'Powerhouse Dragons',
       unlocked: false,
       completed: false,
     },
@@ -57,7 +55,6 @@ const travelMap = {
       name: 'Merseyside',
       subtitle: 'Liverpool — Amathus',
       x: 185, y: 190,
-      rival: 'Amathus',
       unlocked: false,
       completed: false,
     },
@@ -66,7 +63,6 @@ const travelMap = {
       name: 'Royal Albert Dock',
       subtitle: 'London — Thames Valley Dragons',
       x: 285, y: 295,
-      rival: 'Thames Valley Dragons',
       unlocked: false,
       completed: false,
     },
@@ -76,11 +72,14 @@ const travelMap = {
     this.open = true;
     this.travelling = false;
     this.travelProgress = 0;
-    // Sync completed status from STATE
-    if (STATE.racedCaldecotte) {
-      this.venues[0].completed = true;
-      this.venues[1].unlocked = true;
-    }
+    this.venues.forEach(v => {
+      v.unlocked = STATE.venuesUnlocked.includes(v.id);
+      v.completed = !!STATE['raced' +
+        v.id.charAt(0).toUpperCase() + v.id.slice(1)];
+    });
+    // Reset selected to current venue
+    const idx = this.venues.findIndex(v => v.id === STATE.currentVenue);
+    this.selectedVenue = idx >= 0 ? idx : 0;
   },
 
   close() {
@@ -90,8 +89,10 @@ const travelMap = {
   travelTo(venueId) {
     this.travelling = true;
     this.travelProgress = 0;
-    this.travelTimer = 0;
     this.destinationId = venueId;
+    const current = this.venues.find(v => v.id === STATE.currentVenue);
+    this.fromX = current ? current.x : 230;
+    this.fromY = current ? current.y : 280;
   },
 
   update(deltaTime) {
@@ -101,9 +102,12 @@ const travelMap = {
       this.travelProgress = 1;
       this.travelling = false;
       this.open = false;
-      // For now just close — later this loads the venue scene
       STATE.currentVenue = this.destinationId;
       STATE.save();
+      player.x = 64;
+      player.y = 80;
+      activeNPCIndex = null;
+      activeLineIndex = 0;
     }
   },
 
@@ -113,17 +117,14 @@ const travelMap = {
     const unlocked = this.venues.filter(v => v.unlocked);
 
     if (key === 'ArrowDown' || key === 'ArrowRight') {
-      this.selectedVenue = Math.min(
-        this.selectedVenue + 1,
-        unlocked.length - 1
-      );
+      this.selectedVenue = Math.min(this.selectedVenue + 1, unlocked.length - 1);
     }
     if (key === 'ArrowUp' || key === 'ArrowLeft') {
       this.selectedVenue = Math.max(this.selectedVenue - 1, 0);
     }
     if (key === ' ' || key === 'Enter') {
       const venue = unlocked[this.selectedVenue];
-      if (venue && !venue.completed) {
+      if (venue && venue.id !== STATE.currentVenue) {
         this.travelTo(venue.id);
       }
     }
@@ -133,7 +134,6 @@ const travelMap = {
   },
 
   drawEngland(ctx) {
-    // Simplified England outline as a series of points
     const pts = [
       [220,80],[235,72],[248,78],[258,88],[268,95],
       [275,110],[278,125],[272,138],[265,148],[260,158],
@@ -161,11 +161,9 @@ const travelMap = {
   draw(ctx) {
     if (!this.open) return;
 
-    // Background
     ctx.fillStyle = '#0a0a1a';
     ctx.fillRect(0, 0, 480, 432);
 
-    // Title
     ctx.fillStyle = '#f0c040';
     ctx.font = 'bold 13px monospace';
     ctx.textAlign = 'center';
@@ -178,10 +176,9 @@ const travelMap = {
     ctx.lineTo(460, 28);
     ctx.stroke();
 
-    // Draw England
     this.drawEngland(ctx);
 
-    // Draw route lines between unlocked venues
+    // Route lines
     const unlocked = this.venues.filter(v => v.unlocked);
     for (let i = 0; i < unlocked.length - 1; i++) {
       const a = unlocked[i];
@@ -196,13 +193,11 @@ const travelMap = {
       ctx.setLineDash([]);
     }
 
-    // Draw venue pins
-    this.venues.forEach((venue, i) => {
-      const isSelected = this.venues.filter(
-        v => v.unlocked)[this.selectedVenue] === venue;
+    // Venue pins
+    this.venues.forEach((venue) => {
+      const isSelected = unlocked[this.selectedVenue] === venue;
 
       if (!venue.unlocked) {
-        // Locked pin — grey dot
         ctx.fillStyle = '#333';
         ctx.beginPath();
         ctx.arc(venue.x, venue.y, 4, 0, Math.PI * 2);
@@ -210,38 +205,42 @@ const travelMap = {
         return;
       }
 
-      // Unlocked pin
+      const isCurrent = venue.id === STATE.currentVenue;
       const pinColour = venue.completed ? '#1D9E75'
+        : isCurrent ? '#8B1A1A'
         : isSelected ? '#f0c040' : '#ffffff';
 
       ctx.fillStyle = pinColour;
       ctx.beginPath();
       ctx.arc(venue.x, venue.y, isSelected ? 6 : 4, 0, Math.PI * 2);
       ctx.fill();
-
-      // Pin border
       ctx.strokeStyle = isSelected ? '#f0c040' : '#888';
       ctx.lineWidth = isSelected ? 1.5 : 0.5;
       ctx.stroke();
 
-      // Completed tick
       if (venue.completed) {
         ctx.fillStyle = '#ffffff';
         ctx.font = '8px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('✓', venue.x, venue.y - 8);
       }
+
+      if (isCurrent) {
+        ctx.fillStyle = '#ffaaaa';
+        ctx.font = '7px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('YOU', venue.x, venue.y + 14);
+      }
     });
 
-    // Venue info panel — show selected venue details
-    const unlocked2 = this.venues.filter(v => v.unlocked);
-    const selected = unlocked2[this.selectedVenue];
+    // Info panel
+    const selected = unlocked[this.selectedVenue];
     if (selected) {
       ctx.fillStyle = '#111';
-      ctx.fillRect(20, 340, 440, 60);
+      ctx.fillRect(20, 340, 440, 64);
       ctx.strokeStyle = '#333';
       ctx.lineWidth = 0.5;
-      ctx.strokeRect(20, 340, 440, 60);
+      ctx.strokeRect(20, 340, 440, 64);
 
       ctx.fillStyle = '#f0c040';
       ctx.font = 'bold 11px monospace';
@@ -252,52 +251,52 @@ const travelMap = {
       ctx.font = '9px monospace';
       ctx.fillText(selected.subtitle, 30, 372);
 
-      if (selected.completed) {
+      if (selected.id === STATE.currentVenue) {
+        ctx.fillStyle = '#8B1A1A';
+        ctx.font = '9px monospace';
+        ctx.fillText('YOU ARE HERE', 30, 388);
+      } else if (selected.completed) {
         ctx.fillStyle = '#1D9E75';
         ctx.font = '9px monospace';
-        ctx.fillText('COMPLETED', 30, 386);
+        ctx.fillText('COMPLETED', 30, 388);
       } else {
         ctx.fillStyle = '#ffffff';
         ctx.font = '9px monospace';
-        ctx.fillText('[ Space ] Travel here', 30, 386);
+        ctx.fillText('[ Space ] Travel here', 30, 388);
       }
 
-      // Trophy points
       ctx.fillStyle = '#f0c040';
       ctx.textAlign = 'right';
       ctx.fillText('PTS: ' + STATE.trophyPoints, 450, 358);
     }
 
-    // Controls hint
     ctx.fillStyle = '#444';
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('[ arrows ] select    [ Space ] travel    [ M ] close', 240, 424);
 
     // Travel animation
-    if (this.travelling && selected) {
-      const from = this.venues[0];
-      const to = selected;
-      const bx = from.x + (to.x - from.x) * this.travelProgress;
-      const by = from.y + (to.y - from.y) * this.travelProgress;
+    if (this.travelling) {
+      const to = this.venues.find(v => v.id === this.destinationId);
+      if (to) {
+        const bx = this.fromX + (to.x - this.fromX) * this.travelProgress;
+        const by = this.fromY + (to.y - this.fromY) * this.travelProgress;
 
-      // Minibus icon
-      ctx.fillStyle = '#8B1A1A';
-      ctx.fillRect(bx - 6, by - 4, 12, 8);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(bx - 4, by - 2, 4, 4);
+        ctx.fillStyle = '#8B1A1A';
+        ctx.fillRect(bx - 6, by - 4, 12, 8);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(bx - 4, by - 2, 4, 4);
 
-      // Travel text
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 10px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('Travelling...', 240, 320);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Travelling to ' + to.name + '...', 240, 320);
 
-      // Progress bar
-      ctx.fillStyle = '#222';
-      ctx.fillRect(140, 328, 200, 6);
-      ctx.fillStyle = '#8B1A1A';
-      ctx.fillRect(140, 328, this.travelProgress * 200, 6);
+        ctx.fillStyle = '#222';
+        ctx.fillRect(140, 328, 200, 6);
+        ctx.fillStyle = '#8B1A1A';
+        ctx.fillRect(140, 328, this.travelProgress * 200, 6);
+      }
     }
   }
 };

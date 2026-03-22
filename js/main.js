@@ -1,11 +1,3 @@
-function isWalkable(x, y) {
-  const col = Math.floor(x / TILE_SIZE);
-  const row = Math.floor(y / TILE_SIZE);
-  if (row < 0 || row >= MAP_DATA.length) return false;
-  if (col < 0 || col >= MAP_DATA[0].length) return false;
-  return MAP_DATA[row][col] !== 0;
-}
-
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
@@ -15,30 +7,33 @@ window.addEventListener('keydown', e => {
   keys[e.key] = true;
   e.preventDefault();
 
-  // Travel map
+  // Travel map toggle
   if (e.key === 'm' || e.key === 'M') {
     if (!race.active && !race.showTutorial &&
-        !isDialogueActive() && !crewScreen.open &&
-        STATE.racedCaldecotte) {
-      if (travelMap.open) {
-        travelMap.close();
-      } else {
-        travelMap.open_map();
+        !isDialogueActive() && !crewScreen.open) {
+      const venue = VENUES[STATE.currentVenue];
+      const raced = venue && STATE[venue.raceStateFlag];
+      if (raced) {
+        travelMap.open ? travelMap.close() : travelMap.open_map();
       }
     }
     return;
   }
 
-  // Pass keys to travel map if open
+  // Travel map navigation
   if (travelMap.open) {
     travelMap.handleKey(e.key);
     return;
   }
 
-  // Crew screen
+  // Crew screen toggle
   if (e.key === 'c' || e.key === 'C') {
     if (!race.active && !race.showTutorial && !isDialogueActive()) {
       crewScreen.open = !crewScreen.open;
+      if (!crewScreen.open) {
+        crewScreen.selectedIndex = null;
+        crewScreen.scrollOffset = 0;
+      }
     }
     return;
   }
@@ -49,6 +44,7 @@ window.addEventListener('keydown', e => {
     return;
   }
 
+  // Space actions
   if (e.key === ' ') {
     if (race.showTutorial) {
       race.tap();
@@ -63,16 +59,23 @@ window.addEventListener('keydown', e => {
       return;
     }
     if (!isDialogueActive()) {
-      const onDock = player.x > 64 && player.x < 160 &&
-                     player.y > 96 && player.y < 160;
-      if (onDock && STATE.metTim && !STATE.racedCaldecotte) {
-        race.start();
-        return;
-      }
-      if (onDock && !STATE.metTim) {
-        npcs[0].active = true;
-        npcs[0].currentLine = 0;
-        return;
+      const venue = VENUES[STATE.currentVenue];
+      if (venue) {
+        const b = venue.dockBounds;
+        const onDock = player.x > b.x1 && player.x < b.x2 &&
+                       player.y > b.y1 && player.y < b.y2;
+        const alreadyRaced = STATE[venue.raceStateFlag];
+        const needsTim = STATE.currentVenue === 'caldecotte' && !STATE.metTim;
+
+        if (onDock && !alreadyRaced && !needsTim) {
+          race.start();
+          return;
+        }
+        if (onDock && needsTim) {
+          activeNPCIndex = 0;
+          activeLineIndex = 0;
+          return;
+        }
       }
     }
   }
@@ -89,12 +92,14 @@ function update(deltaTime, timestamp) {
   }
   travelMap.update(deltaTime);
   if (travelMap.open) return;
+  if (crewScreen.open) return;
   player.update(deltaTime, keys);
   updateNPCs(keys, player);
 
-  // Auto open travel map at right edge after race
-  if (STATE.racedCaldecotte && isAtMapEdge(player) &&
-      !travelMap.open && !crewScreen.open) {
+  // Auto open travel map at right edge
+  const venue = VENUES[STATE.currentVenue];
+  const raced = venue && STATE[venue.raceStateFlag];
+  if (raced && isAtMapEdge(player) && !travelMap.open) {
     travelMap.open_map();
   }
 }
@@ -105,63 +110,69 @@ function draw() {
     return;
   }
 
-  ctx.fillStyle = '#1a6b9e';
+  const venue = VENUES[STATE.currentVenue];
+  const bgColour = venue ? venue.bgColour : '#1a6b9e';
+
+  ctx.fillStyle = bgColour;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawMap(ctx);
   drawNPCs(ctx);
   player.draw(ctx);
   drawDialogue(ctx);
 
-  const onDock = player.x > 64 && player.x < 160 &&
-                 player.y > 96 && player.y < 160;
+  if (venue) {
+    const b = venue.dockBounds;
+    const onDock = player.x > b.x1 && player.x < b.x2 &&
+                   player.y > b.y1 && player.y < b.y2;
+    const alreadyRaced = STATE[venue.raceStateFlag];
+    const needsTim = STATE.currentVenue === 'caldecotte' && !STATE.metTim;
 
-  if (onDock && STATE.metTim && !STATE.racedCaldecotte) {
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(80, 8, 320, 20);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '8px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('[ Space ] Race — Secklow vs Soaring Dragons', 240, 21);
-  }
-
-  if (onDock && !STATE.metTim) {
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(80, 8, 320, 20);
-    ctx.fillStyle = '#f0c040';
-    ctx.font = '8px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('Talk to Coach Tim first', 240, 21);
-  }
-
-  if (onDock && STATE.racedCaldecotte) {
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(80, 8, 320, 20);
-    ctx.fillStyle = '#aaaaaa';
-    ctx.font = '8px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('Next race: Loughborough — head right for map', 240, 21);
+    if (onDock && !alreadyRaced && !needsTim) {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(80, 8, 320, 20);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('[ Space ] Race — Secklow vs ' + venue.raceRival, 240, 21);
+    }
+    if (onDock && needsTim) {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(80, 8, 320, 20);
+      ctx.fillStyle = '#f0c040';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Talk to Coach Tim first', 240, 21);
+    }
+    if (onDock && alreadyRaced) {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(80, 8, 320, 20);
+      ctx.fillStyle = '#aaaaaa';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Head right for the travel map', 240, 21);
+    }
   }
 
   // Edge prompt
-  if (STATE.racedCaldecotte && player.x > 380 && !travelMap.open) {
+  const raced = venue && STATE[venue.raceStateFlag];
+  if (raced && player.x > 380 && !travelMap.open) {
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(100, 380, 280, 18);
     ctx.fillStyle = '#f0c040';
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('Keep going → to open travel map', 240, 392);
+    ctx.fillText('Keep going → for travel map', 240, 392);
   }
 
   crewScreen.draw(ctx);
   travelMap.draw(ctx);
 
-  // HUD hints
   if (!crewScreen.open && !travelMap.open) {
     ctx.fillStyle = '#333';
     ctx.font = '8px monospace';
     ctx.textAlign = 'left';
     ctx.fillText('[ C ] crew', 8, 424);
-    if (STATE.racedCaldecotte) {
+    if (raced) {
       ctx.textAlign = 'right';
       ctx.fillText('[ M ] map', 472, 424);
     }

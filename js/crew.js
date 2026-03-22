@@ -20,26 +20,23 @@ const crewScreen = {
     { name: 'Liz',     role: 'Drummer', power: 45, rhythm: 94, stamina: 68, colour: '#f0c040', bio: 'The heartbeat of Secklow. Her timing is almost supernatural.' },
     { name: 'Steve',   role: 'Sweep',   power: 60, rhythm: 78, stamina: 80, colour: '#c0c0c0', bio: 'Reads the river like a book. Invaluable on technical courses.' },
   ],
+
   draw(ctx) {
     if (!this.open) return;
 
-    // Full screen overlay
     ctx.fillStyle = 'rgba(0,0,0,0.92)';
     ctx.fillRect(0, 0, 480, 432);
 
-    // Header
     ctx.fillStyle = '#f0c040';
     ctx.font = 'bold 13px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('SECKLOW HUNDRED — CREW', 240, 20);
 
-    // Trophy points
     ctx.fillStyle = '#f0c040';
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'right';
     ctx.fillText('TROPHY PTS: ' + STATE.trophyPoints, 460, 20);
 
-    // Divider
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -47,7 +44,6 @@ const crewScreen = {
     ctx.lineTo(460, 28);
     ctx.stroke();
 
-    // Scroll indicators
     if (this.scrollOffset > 0) {
       ctx.fillStyle = '#555';
       ctx.font = '10px monospace';
@@ -61,7 +57,6 @@ const crewScreen = {
       ctx.fillText('▼ more below', 240, 390);
     }
 
-    // Draw visible crew members
     const visible = this.roster.slice(
       this.scrollOffset,
       this.scrollOffset + this.visibleCount
@@ -73,46 +68,33 @@ const crewScreen = {
       const y = 44 + i * 54;
       const w = 440;
       const h = 50;
-
       const isSelected = this.selectedIndex === actualIndex;
 
-      // Card background
       ctx.fillStyle = isSelected ? '#1a1a2e' : '#111';
       ctx.fillRect(x, y, w, h);
-
-      // Border
       ctx.strokeStyle = isSelected ? '#f0c040' : '#222';
       ctx.lineWidth = isSelected ? 1.5 : 0.5;
       ctx.strokeRect(x, y, w, h);
 
-      // Colour dot
       ctx.fillStyle = member.colour;
       ctx.fillRect(x + 8, y + 10, 10, 10);
 
-      // Name
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px monospace';
       ctx.textAlign = 'left';
       ctx.fillText(member.name, x + 26, y + 18);
 
-      // Role
       ctx.fillStyle = '#888';
       ctx.font = '9px monospace';
       ctx.fillText(member.role, x + 26, y + 30);
 
-      // Scroll position indicator (e.g. 3/14)
       ctx.fillStyle = '#444';
       ctx.font = '8px monospace';
       ctx.textAlign = 'right';
-      ctx.fillText(
-        (actualIndex + 1) + '/' + this.roster.length,
-        x + w - 8, y + 18
-      );
+      ctx.fillText((actualIndex + 1) + '/' + this.roster.length, x + w - 8, y + 18);
 
-      // Stat bars
       const barX = x + 160;
       const barW = 260;
-
       const stats = [
         { label: 'PWR', value: member.power,   col: '#e05a5a', by: y + 16 },
         { label: 'RHY', value: member.rhythm,  col: '#5ae0a8', by: y + 28 },
@@ -124,20 +106,16 @@ const crewScreen = {
         ctx.font = '8px monospace';
         ctx.textAlign = 'left';
         ctx.fillText(s.label, barX, s.by);
-
         ctx.fillStyle = '#222';
         ctx.fillRect(barX + 24, s.by - 7, barW - 24, 7);
-
         ctx.fillStyle = s.col;
         ctx.fillRect(barX + 24, s.by - 7, (s.value / 100) * (barW - 24), 7);
-
         ctx.fillStyle = '#555';
         ctx.textAlign = 'right';
         ctx.fillText(s.value, barX + barW, s.by);
       });
     });
 
-    // Bio panel at bottom
     if (this.selectedIndex !== null) {
       const member = this.roster[this.selectedIndex];
       ctx.fillStyle = '#0a0a1a';
@@ -151,7 +129,6 @@ const crewScreen = {
       ctx.fillText(member.bio, 28, 408);
     }
 
-    // Controls hint
     ctx.fillStyle = '#444';
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
@@ -160,25 +137,21 @@ const crewScreen = {
 
   handleKey(key) {
     if (!this.open) return;
-
     if (key === 'ArrowDown') {
       if (this.selectedIndex === null) {
         this.selectedIndex = 0;
       } else if (this.selectedIndex < this.roster.length - 1) {
         this.selectedIndex++;
-        // Scroll down if selected goes below visible area
         if (this.selectedIndex >= this.scrollOffset + this.visibleCount) {
           this.scrollOffset++;
         }
       }
     }
-
     if (key === 'ArrowUp') {
       if (this.selectedIndex === null) {
         this.selectedIndex = 0;
       } else if (this.selectedIndex > 0) {
         this.selectedIndex--;
-        // Scroll up if selected goes above visible area
         if (this.selectedIndex < this.scrollOffset) {
           this.scrollOffset--;
         }

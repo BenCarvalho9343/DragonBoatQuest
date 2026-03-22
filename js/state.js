@@ -4,6 +4,8 @@ const STATE = {
   metTim: false,
   racedCaldecotte: false,
   caldecotteResult: null,
+  racedLoughborough: false,
+  loughboroughResult: null,
   currentVenue: 'caldecotte',
 
   save() {
@@ -13,6 +15,8 @@ const STATE = {
       metTim: this.metTim,
       racedCaldecotte: this.racedCaldecotte,
       caldecotteResult: this.caldecotteResult,
+      racedLoughborough: this.racedLoughborough,
+      loughboroughResult: this.loughboroughResult,
       currentVenue: this.currentVenue,
     }));
   },

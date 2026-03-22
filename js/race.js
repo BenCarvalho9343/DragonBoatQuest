@@ -70,11 +70,25 @@ const race = {
     if (this.distance >= 500) {
       this.finished = true;
       this.active = false;
-      STATE.racedCaldecotte = true;
-      let rivalX = 20 + (this.distance * 0.85 / 500) * 400;
-      STATE.caldecotteResult = this.boatX > rivalX ? 'win' : 'loss';
-      STATE.trophyPoints += STATE.caldecotteResult === 'win' ? 10 : 3;
-      STATE.save();
+      const venue = VENUES[STATE.currentVenue];
+      if (venue) {
+        STATE[venue.raceStateFlag] = true;
+        let rivalX = 20 + (this.distance * 0.85 / 500) * 400;
+        const result = this.boatX > rivalX ? 'win' : 'loss';
+        STATE[venue.raceResultFlag] = result;
+        STATE.trophyPoints += result === 'win' ? 10 : 3;
+        if (STATE.currentVenue === 'caldecotte') {
+          if (!STATE.venuesUnlocked.includes('loughborough')) {
+            STATE.venuesUnlocked.push('loughborough');
+          }
+        }
+        if (STATE.currentVenue === 'loughborough') {
+          if (!STATE.venuesUnlocked.includes('nottingham')) {
+            STATE.venuesUnlocked.push('nottingham');
+          }
+        }
+        STATE.save();
+      }
     }
   },
 
@@ -174,6 +188,9 @@ const race = {
   draw(ctx) {
     if (!this.active && !this.finished && !this.showTutorial) return;
 
+    const venue = VENUES[STATE.currentVenue];
+    const rivalName = venue ? venue.raceRival : 'Soaring Dragons';
+
     ctx.fillStyle = '#1a5a8a';
     ctx.fillRect(0, 0, 480, 432);
     ctx.fillStyle = '#3a7d2c';
@@ -268,7 +285,7 @@ const race = {
     ctx.fillStyle = '#ffaaaa';
     ctx.fillText('SECKLOW', this.boatX, 158);
     ctx.fillStyle = '#aaaaff';
-    ctx.fillText('SOARING', rivalX, 188);
+    ctx.fillText(rivalName.toUpperCase(), rivalX, 188);
 
     if (this.showTutorial) {
       this.drawTutorial(ctx);
@@ -285,11 +302,11 @@ const race = {
       ctx.fillStyle = won ? '#f0c040' : '#aaaaaa';
       ctx.font = 'bold 14px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(won ? 'SECKLOW WIN!' : 'SOARING WIN!', 240, 175);
+      ctx.fillText(won ? 'SECKLOW WIN!' : rivalName.toUpperCase() + ' WIN!', 240, 175);
       ctx.fillStyle = '#ffffff';
       ctx.font = '10px monospace';
       ctx.fillText('Race complete.', 240, 200);
-      ctx.fillText('Return to Tim for debrief.', 240, 218);
+      ctx.fillText('Return to the overworld.', 240, 218);
       ctx.fillStyle = '#aaaaaa';
       ctx.fillText('[ Space ] to return', 240, 248);
     }
