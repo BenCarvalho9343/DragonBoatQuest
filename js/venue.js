@@ -476,4 +476,178 @@ const VENUES = {
     raceStateFlag: 'racedLiverpool',
     raceResultFlag: 'liverpoolResult',
   },
+
+  london: {
+    name: 'Royal Albert Dock, London',
+    bgColour: '#050510',
+    mapData: [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,0],
+      [0,14,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,14,0],
+      [0,14,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,15,15,15,15,1,1,1,14,0],
+      [0,14,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,15,15,15,15,1,1,1,14,0],
+      [0,14,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,14,0],
+      [0,14,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,14,0],
+      [0,14,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,14,0],
+      [0,14,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,14,0],
+      [0,14,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,14,0],
+      [0,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ],
+    npcs: [
+      {
+        name: 'Coach Tim',
+        x: 80, y: 112,
+        colour: '#4a90d9',
+        get lines() {
+          // Pre any racing
+          if (!STATE.londonStage) {
+            return [
+              "Royal Albert Dock. We made it.",
+              "Three finals today. 200m, 500m, 2000m.",
+              "Thames Valley Dragons are the home favourites.",
+              "Every club we've faced this season is here.",
+              "Race the 200m first. Get to the dock.",
+            ];
+          }
+          // After 200m
+          if (STATE.londonStage === 'after200') {
+            const r = STATE.london200Result;
+            const wins = STATE.getLondonWins();
+            if (r === 'win') {
+              return [
+                "200m final — Secklow win. Yes.",
+                "That's " + wins + " final down. Two to go.",
+                "Thames Valley will push harder in the 500m.",
+                "Stay focused. Get back on the water.",
+              ];
+            }
+            return [
+              "Tough 200m. Thames Valley were fast.",
+              "That's done. We move on.",
+              "The 500m is our distance. Get back out there.",
+            ];
+          }
+          // After 500m
+          if (STATE.londonStage === 'after500') {
+            const wins = STATE.getLondonWins();
+            if (wins === 2) {
+              return [
+                "Two finals won. One left.",
+                "The 2000m. Our strongest distance.",
+                "Win this and we win the National League.",
+                "Twenty years of Secklow history behind you.",
+                "Get on the water.",
+              ];
+            }
+            if (wins === 1) {
+              return [
+                "One win from two finals.",
+                "We need the 2000m to have a chance.",
+                "The bend mechanic matters here — hit every line.",
+                "Leave everything on the water.",
+              ];
+            }
+            return [
+              "Two losses. But we're still here.",
+              "The 2000m is still to race.",
+              "Win it and we leave with something.",
+              "That's all we can do now.",
+            ];
+          }
+          // Complete
+          if (STATE.londonStage === 'complete') {
+            const ending = STATE.getLondonEnding();
+            if (ending === 'champion') {
+              return [
+                "National Champions.",
+                "I've been coaching for twenty years.",
+                "I've never been prouder of a crew.",
+                "Well done. All of you.",
+              ];
+            }
+            if (ending === 'runnersup') {
+              return [
+                "Runners up. That's our best finish in years.",
+                "We'll be back next season.",
+                "And we'll win it.",
+              ];
+            }
+            return [
+              "We gave everything.",
+              "The BDA Spirit award means something.",
+              "This club is going places. Trust me.",
+            ];
+          }
+          return ["Get to the dock."];
+        },
+      },
+      {
+        name: 'Thames Captain',
+        x: 320, y: 80,
+        colour: '#1D9E75',
+        get lines() {
+          if (!STATE.londonStage) {
+            return [
+              "Welcome to the Royal Albert Dock.",
+              "Our home. Our water. Our crowd.",
+              "We respect every club here today.",
+              "But this is our championship to lose.",
+            ];
+          }
+          if (STATE.londonStage === 'complete') {
+            const ending = STATE.getLondonEnding();
+            if (ending === 'champion') {
+              return [
+                "You beat us. On our home water.",
+                "Genuinely — congratulations.",
+                "Secklow Hundred. National Champions.",
+              ];
+            }
+            return [
+              "Good season Secklow.",
+              "See you next year.",
+            ];
+          }
+          return [
+            "Focus on your own race.",
+            "The Dock will decide.",
+          ];
+        },
+      },
+      {
+        name: 'BDA Official',
+        x: 200, y: 60,
+        colour: '#f0c040',
+        get lines() {
+          if (!STATE.londonStage) {
+            return [
+              "Welcome to the BDA National Championships.",
+              "Three finals — 200m, 500m, 2000m.",
+              "Your season trophy points: " + STATE.trophyPoints + ".",
+              "Good luck to all competing clubs.",
+            ];
+          }
+          if (STATE.londonStage === 'complete') {
+            const wins = STATE.getLondonWins();
+            return [
+              "Finals complete. " + wins + " win" +
+                (wins !== 1 ? "s" : "") + " for Secklow.",
+              "Total season points: " + STATE.trophyPoints + ".",
+              "What a season from Milton Keynes.",
+            ];
+          }
+          return [
+            "Racing continues at the dock.",
+            "Good luck Secklow.",
+          ];
+        },
+      },
+    ],
+    dockBounds: { x1: 64, x2: 160, y1: 96, y2: 160 },
+    raceRival: 'Thames Valley Dragons',
+    raceStateFlag: 'racedLondon',
+    raceResultFlag: null,
+    isFinale: true,
+  },
 };

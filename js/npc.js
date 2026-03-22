@@ -15,12 +15,14 @@ const NPC_APPEARANCES = {
   'Amathus Captain':    { skinColour:'#c68642', hairColour:'#1a1a1a', kitColour:'#cc0000', kitSecondary:'#ffffff' },
   'Dock Marshal':       { skinColour:'#ffe4c4', hairColour:'#4444cc', kitColour:'#4444cc', kitSecondary:'#ffffff' },
   'Mersey Local':       { skinColour:'#f4c07a', hairColour:'#1a1a1a', kitColour:'#6688ff', kitSecondary:'#ffffff' },
+  'Thames Captain':     { skinColour:'#ffe4c4', hairColour:'#1a1a1a', kitColour:'#1D9E75', kitSecondary:'#ffffff' },
+  'BDA Official':       { skinColour:'#f4c07a', hairColour:'#888888', kitColour:'#1a1a2a', kitSecondary:'#f0c040' },
 };
 
 const DEFAULT_APPEARANCE = {
-  skinColour: '#f4c07a',
-  hairColour: '#3a2a1a',
-  kitColour:  '#446688',
+  skinColour:   '#f4c07a',
+  hairColour:   '#3a2a1a',
+  kitColour:    '#446688',
   kitSecondary: '#ffffff',
 };
 
@@ -39,15 +41,26 @@ function updateNPCs(keys, player) {
     const dy = Math.abs(player.y - npc.y);
     const nearby = dx < 24 && dy < 24;
 
-    if (nearby && keys[' '] && activeNPCIndex === null && !npc.justPressed) {
+    if (nearby && keys[' '] && activeNPCIndex === null &&
+        !npc.justPressed) {
       activeNPCIndex = i;
       activeLineIndex = 0;
       npc.justPressed = true;
-    } else if (keys[' '] && activeNPCIndex === i && !npc.justPressed) {
+    } else if (keys[' '] && activeNPCIndex === i &&
+               !npc.justPressed) {
       activeLineIndex++;
-      if (activeLineIndex >= npc.lines.length) {
+if (activeLineIndex >= npc.lines.length) {
         if (npc.name === 'Coach Tim') {
-          STATE.metTim = true;
+          if (STATE.currentVenue === 'caldecotte') {
+            STATE.metTim = true;
+          }
+          if (STATE.currentVenue === 'london') {
+            if (STATE.londonStage === 'after200') {
+              STATE.londonStage = '200debriefed';
+            } else if (STATE.londonStage === 'after500') {
+              STATE.londonStage = '500debriefed';
+            }
+          }
           STATE.save();
         }
         activeNPCIndex = null;

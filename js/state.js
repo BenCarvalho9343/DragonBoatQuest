@@ -14,7 +14,28 @@ const STATE = {
   middlesbroughResult: null,
   racedLiverpool: false,
   liverpoolResult: null,
+  racedLondon: false,
+  londonStage: null,
+  london200Result: null,
+  london500Result: null,
+  london2000Result: null,
   currentVenue: 'caldecotte',
+
+  getLondonWins() {
+    let wins = 0;
+    if (this.london200Result === 'win') wins++;
+    if (this.london500Result === 'win') wins++;
+    if (this.london2000Result === 'win') wins++;
+    return wins;
+  },
+
+  getLondonEnding() {
+    const wins = this.getLondonWins();
+    if (wins === 3) return 'champion';
+    if (wins === 2) return 'champion';
+    if (wins === 1) return 'runnersup';
+    return 'spirit';
+  },
 
   save() {
     localStorage.setItem('dbq_save', JSON.stringify({
@@ -33,6 +54,11 @@ const STATE = {
       middlesbroughResult: this.middlesbroughResult,
       racedLiverpool: this.racedLiverpool,
       liverpoolResult: this.liverpoolResult,
+      racedLondon: this.racedLondon,
+      londonStage: this.londonStage,
+      london200Result: this.london200Result,
+      london500Result: this.london500Result,
+      london2000Result: this.london2000Result,
       currentVenue: this.currentVenue,
     }));
   },
