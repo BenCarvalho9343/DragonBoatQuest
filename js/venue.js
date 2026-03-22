@@ -146,4 +146,88 @@ const VENUES = {
     raceStateFlag: 'racedLoughborough',
     raceResultFlag: 'loughboroughResult',
   },
+   nottingham: {
+    name: 'River Trent, Nottingham',
+    bgColour: '#1a1200',
+    mapData: [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,0],
+      [0,6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,6,0],
+      [0,6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,7,7,7,7,1,1,1,6,0],
+      [0,6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,7,7,7,7,1,1,1,6,0],
+      [0,6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,6,0],
+      [0,6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,6,0],
+      [0,6,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,6,0],
+      [0,6,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,6,0],
+      [0,6,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,6,0],
+      [0,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ],
+    npcs: [
+      {
+        name: 'Anaconda Captain',
+        x: 320, y: 80,
+        colour: '#9900cc',
+        get lines() {
+          if (!STATE.racedNottingham) {
+            return [
+              "Secklow. We've been expecting you.",
+              "The Trent doesn't forgive mistakes.",
+              "Neither do we.",
+              "See you on the water.",
+            ];
+          }
+          if (STATE.nottinghamResult === 'win') {
+            return [
+              "...fine. Well raced.",
+              "The Trent was kind to you today.",
+              "It won't be next time.",
+            ];
+          }
+          return [
+            "The river chose us today.",
+            "It usually does.",
+          ];
+        },
+      },
+      {
+        name: 'Trent Marshal',
+        x: 120, y: 60,
+        colour: '#ffaa00',
+        get lines() {
+          return [
+            "Welcome to the River Trent.",
+            "Choppier than it looks — stay central.",
+            "Notts Anaconda train here year round.",
+            "They know every ripple on this stretch.",
+          ];
+        },
+      },
+      {
+        name: 'Supporter',
+        x: 200, y: 112,
+        colour: '#cc8800',
+        get lines() {
+          if (!STATE.racedNottingham) {
+            return [
+              "Anaconda are strongest in the middle 200m.",
+              "They hit a power surge around the 150m mark.",
+              "If you can stay close through that, you're in it.",
+            ];
+          }
+          return [
+            "Good race. The Trent's tough on visitors.",
+            "You did well to stay with them.",
+          ];
+        },
+      },
+    ],
+    dockBounds: { x1: 64, x2: 160, y1: 96, y2: 160 },
+    raceRival: 'Notts Anaconda',
+    raceStateFlag: 'racedNottingham',
+    raceResultFlag: 'nottinghamResult',
+  } 
+
+
+
 };

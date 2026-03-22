@@ -23,6 +23,24 @@ const NPC_APPEARANCES = {
     kitColour:    '#cc2222',
     kitSecondary: '#ffffff',
   },
+  'Anaconda Captain': {
+    skinColour:   '#c68642',
+    hairColour:   '#1a1a1a',
+    kitColour:    '#6600aa',
+    kitSecondary: '#ffffff',
+  },
+  'Trent Marshal': {
+    skinColour:   '#ffe4c4',
+    hairColour:   '#cc8800',
+    kitColour:    '#cc8800',
+    kitSecondary: '#ffffff',
+  },
+  'Supporter': {
+    skinColour:   '#f4c07a',
+    hairColour:   '#2a1a0a',
+    kitColour:    '#cc8800',
+    kitSecondary: '#1a1200',
+  },
 };
 
 const DEFAULT_APPEARANCE = {

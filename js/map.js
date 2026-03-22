@@ -7,7 +7,10 @@ const COLOURS = {
   3: '#5a4a3a',
   4: '#2a6a3a',
   5: '#4a3a2a',
+  6: '#2a2000',  // Trent river bank — dark amber
+  7: '#3a2a1a',  // Anaconda club hut
 };
+
 
 function getMapData() {
   const venue = VENUES[STATE.currentVenue];

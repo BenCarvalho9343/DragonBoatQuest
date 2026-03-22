@@ -57,6 +57,22 @@ const race = {
         this.boatSpeed = Math.max(10, this.boatSpeed - 2);
         this.perfectStreak = 0;
         this.synergyGauge = Math.max(0, this.synergyGauge - 10);
+
+        if (STATE.currentVenue === 'caldecotte') {
+          if (!STATE.venuesUnlocked.includes('loughborough')) {
+            STATE.venuesUnlocked.push('loughborough');
+          }
+        }
+        if (STATE.currentVenue === 'loughborough') {
+          if (!STATE.venuesUnlocked.includes('nottingham')) {
+            STATE.venuesUnlocked.push('nottingham');
+          }
+        }
+        if (STATE.currentVenue === 'nottingham') {
+          if (!STATE.venuesUnlocked.includes('stneots')) {
+            STATE.venuesUnlocked.push('stneots');
+          }
+        }
       }
     });
 
