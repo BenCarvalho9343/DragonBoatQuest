@@ -73,6 +73,15 @@ const TouchControls = {
       return;
     }
 
+// --- LEAGUE TABLE OPEN ---
+    if (LeagueTable.open) {
+      // Only close if tapping outside the panel
+      if (x < 20 || x > 460 || y < 20 || y > 412) {
+        LeagueTable.close();
+      }
+      return;
+    }
+
     // --- MENU OPEN ---
     if (Menu.open) {
       if (Menu.confirmingRestart) {
@@ -124,9 +133,21 @@ const TouchControls = {
         }
         return;
       }
+   // League table
+      if (x >= 68 && x < 136) {
+        const hasRaced = STATE.racedCaldecotte ||
+                         STATE.racedLoughborough;
+        if (hasRaced && !race.active) LeagueTable.toggle();
+        return;
+      }
       // Mute
-      if (x >= 90 && x < 200) {
+      if (x >= 136 && x < 218) {
         AudioManager.toggleMute();
+        return;
+      }
+      // Menu
+      if (x >= 218 && x < 264) {
+        if (gameStarted) Menu.toggle();
         return;
       }
       // Menu / pause
@@ -294,32 +315,44 @@ const TouchControls = {
   draw(ctx) {
     if (!this.active) return;
 
-    // --- TOP BAR ---
+  // --- TOP BAR ---
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(0, 0, 480, 38);
 
     // Crew button
     ctx.fillStyle = crewScreen.open ?
       'rgba(240,192,64,0.9)' : 'rgba(255,255,255,0.2)';
-    ctx.fillRect(3, 3, 84, 32);
+    ctx.fillRect(3, 3, 64, 32);
     ctx.fillStyle = crewScreen.open ? '#1a1a1a' : '#ffffff';
-    ctx.font = 'bold 9px monospace';
+    ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('CREW', 45, 23);
+    ctx.fillText('CREW', 35, 23);
+
+    // League table button
+    const hasRaced = STATE.racedCaldecotte || STATE.racedLoughborough;
+    if (hasRaced) {
+      ctx.fillStyle = LeagueTable.open ?
+        'rgba(240,192,64,0.9)' : 'rgba(255,255,255,0.2)';
+      ctx.fillRect(71, 3, 64, 32);
+      ctx.fillStyle = LeagueTable.open ? '#1a1a1a' : '#ffffff';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('TABLE', 103, 23);
+    }
 
     // Mute button
     ctx.fillStyle = AudioManager.muted ?
       'rgba(200,50,50,0.7)' : 'rgba(255,255,255,0.2)';
-    ctx.fillRect(91, 3, 106, 32);
+    ctx.fillRect(139, 3, 76, 32);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 9px monospace';
+    ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(AudioManager.muted ? 'UNMUTE' : 'MUTE', 144, 23);
+    ctx.fillText(AudioManager.muted ? 'UNMUTE' : 'MUTE', 177, 23);
 
     // Menu / pause button
     ctx.fillStyle = Menu.open ?
       'rgba(240,192,64,0.9)' : 'rgba(255,255,255,0.2)';
-    ctx.fillRect(201, 3, 78, 32);
+    ctx.fillRect(219, 3, 42, 32);
     ctx.fillStyle = Menu.open ? '#1a1a1a' : '#ffffff';
     ctx.font = 'bold 11px monospace';
     ctx.textAlign = 'center';

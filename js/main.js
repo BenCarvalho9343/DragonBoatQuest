@@ -175,11 +175,22 @@ window.addEventListener('keydown', e => {
   keys[e.key] = true;
   e.preventDefault();
   // Pause menu
-  if (e.key === 'Escape') {
+if (e.key === 'Escape') {
     if (Menu.open) {
       Menu.handleKey('Escape');
+    } else if (LeagueTable.open) {
+      LeagueTable.close();
     } else if (gameStarted && !race.active) {
       Menu.toggle();
+    }
+    return;
+  }
+  // League table
+  if (e.key === 'l' || e.key === 'L') {
+    if (gameStarted && !race.active && !race.showTutorial) {
+      const hasRaced = STATE.racedCaldecotte ||
+                       STATE.racedLoughborough;
+      if (hasRaced) LeagueTable.toggle();
     }
     return;
   }
@@ -322,6 +333,7 @@ window.addEventListener('keyup', e => { keys[e.key] = false; });
 function update(deltaTime, timestamp) {
   if (!gameStarted) return;
   if (Menu.open) return;
+  if (LeagueTable.open) return;
   // Clear arrow keys each frame so touch controls don't stick
   if (TouchControls.active) {
     keys['ArrowUp']    = false;
@@ -515,6 +527,7 @@ if (race.active || race.finished || race.showTutorial) {
   }
   TouchControls.draw(ctx);
   Menu.draw(ctx);
+  LeagueTable.draw(ctx);
 }
 
 let lastTime = 0;

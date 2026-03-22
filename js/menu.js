@@ -5,6 +5,7 @@ const Menu = {
 
   options: [
     { label: 'Resume',        action: 'resume'  },
+    { label: 'League Table',  action: 'league'  },
     { label: 'Music volume',  action: 'music'   },
     { label: 'SFX volume',    action: 'sfx'     },
     { label: 'Restart game',  action: 'restart' },
@@ -106,6 +107,11 @@ const Menu = {
     const opt = this.options[this.selectedOption];
     if (opt.action === 'resume') {
       this.close();
+    }
+    if (opt.action === 'league') {
+      LeagueTable.open = true;
+      this.open = false;
+      this.confirmingRestart = false;
     }
     if (opt.action === 'restart') {
       this.confirmingRestart = true;
