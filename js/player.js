@@ -1,72 +1,175 @@
 function drawCharacter(ctx, x, y, options = {}) {
   const {
-    skinColour   = '#f4c07a',
-    hairColour   = '#3a2a1a',
-    kitColour    = '#8B1A1A',
-    kitSecondary = '#ffffff',
-    facingLeft   = false,
+    skinColour    = '#f4c07a',
+    hairColour    = '#3a2a1a',
+    hairStyle     = 'short',
+    kitColour     = '#8B1A1A',
+    kitSecondary  = '#ffffff',
+    eyeColour     = '#3a2a1a',
+    facingLeft    = false,
+    hasBeard      = false,
+    hairHighlight = null,
+    walkFrame     = 0,
+    withPaddle    = false,
   } = options;
 
+  const ex = facingLeft ? x + 5 : x + 10;
+  const mx = x + 7;
+
+  // Walk cycle — 3 frames
+  // frame 0: neutral, frame 1: left foot forward, frame 2: right foot forward
+  const legL = walkFrame === 1 ? -2 : walkFrame === 2 ? 2 : 0;
+  const legR = walkFrame === 1 ? 2 : walkFrame === 2 ? -2 : 0;
+  const bodyBob = walkFrame === 0 ? 0 : 1;
+
+  const by = y + bodyBob;
+
   // Shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.2)';
-  ctx.fillRect(x + 2, y + 15, 12, 3);
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillRect(x + 2, y + 17, 14, 3);
 
-  // Legs
+  // --- LEGS ---
   ctx.fillStyle = kitColour;
-  ctx.fillRect(x + 3, y + 10, 4, 5);
-  ctx.fillRect(x + 9, y + 10, 4, 5);
+  ctx.fillRect(x + 3, by + 11 + legL, 4, 6 - Math.abs(legL));
+  ctx.fillRect(x + 9, by + 11 + legR, 4, 6 - Math.abs(legR));
 
-  // Feet
-  ctx.fillStyle = '#222222';
-  ctx.fillRect(x + 2, y + 14, 4, 2);
-  ctx.fillRect(x + 9, y + 14, 4, 2);
+  // Shoes
+  ctx.fillStyle = '#222';
+  ctx.fillRect(facingLeft ? x + 1 : x + 3,
+    by + 16 + legL, 5, 3);
+  ctx.fillRect(facingLeft ? x + 8 : x + 9,
+    by + 16 + legR, 5, 3);
 
-  // Body / kit
+  // --- BODY ---
   ctx.fillStyle = kitColour;
-  ctx.fillRect(x + 2, y + 5, 12, 7);
+  ctx.fillRect(x + 2, by + 5, 13, 7);
 
   // Kit stripe
   ctx.fillStyle = kitSecondary;
-  ctx.fillRect(x + 2, y + 7, 12, 2);
+  ctx.fillRect(x + 2, by + 7, 13, 2);
 
-  // Arms
-  ctx.fillStyle = kitColour;
-  ctx.fillRect(x,      y + 5, 3, 5);
-  ctx.fillRect(x + 13, y + 5, 3, 5);
+  // Kit number
+  ctx.fillStyle = kitSecondary;
+  ctx.font = '4px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('1', x + 8, by + 13);
 
-  // Hands
+  // --- ARMS ---
+  // Arm swing opposite to legs
+  const armL = walkFrame === 1 ? 2 : walkFrame === 2 ? -2 : 0;
+  const armR = walkFrame === 1 ? -2 : walkFrame === 2 ? 2 : 0;
+
+  if (withPaddle) {
+    // Paddle version (race only)
+    const paddleX = facingLeft ? x - 4 : x + 17;
+    const paddleHandX = facingLeft ? x + 1 : x + 15;
+    ctx.fillStyle = '#8B6914';
+    ctx.fillRect(paddleX, by + 2, 2, 14);
+    ctx.fillStyle = '#6B4F10';
+    ctx.fillRect(facingLeft ? paddleX - 2 : paddleX + 2,
+      by + 10, 4, 6);
+    ctx.fillStyle = skinColour;
+    ctx.fillRect(paddleHandX, by + 5, 3, 3);
+    ctx.fillRect(paddleHandX, by + 10, 3, 3);
+    ctx.fillStyle = kitColour;
+    ctx.fillRect(facingLeft ? x + 12 : x, by + 5, 3, 5);
+    ctx.fillStyle = skinColour;
+    ctx.fillRect(facingLeft ? x + 12 : x, by + 9, 3, 2);
+  } else {
+    // Walking arms
+    ctx.fillStyle = kitColour;
+    ctx.fillRect(x, by + 5 + armL, 3, 5);
+    ctx.fillRect(x + 13, by + 5 + armR, 3, 5);
+    ctx.fillStyle = skinColour;
+    ctx.fillRect(x, by + 9 + armL, 3, 2);
+    ctx.fillRect(x + 13, by + 9 + armR, 3, 2);
+  }
+
+  // --- NECK ---
   ctx.fillStyle = skinColour;
-  ctx.fillRect(x,      y + 9, 3, 2);
-  ctx.fillRect(x + 13, y + 9, 3, 2);
+  ctx.fillRect(x + 6, by + 3, 4, 3);
 
-  // Neck
+  // --- HEAD ---
   ctx.fillStyle = skinColour;
-  ctx.fillRect(x + 6, y + 3, 4, 3);
+  ctx.fillRect(x + 4, by - 2, 9, 7);
 
-  // Head
+  // Ears
   ctx.fillStyle = skinColour;
-  ctx.fillRect(x + 4, y - 1, 8, 7);
+  ctx.fillRect(x + 3, by, 2, 3);
+  ctx.fillRect(x + 13, by, 2, 3);
+  ctx.fillStyle = '#c8956a';
+  ctx.fillRect(x + 3, by + 1, 1, 1);
+  ctx.fillRect(x + 14, by + 1, 1, 1);
 
-  // Hair
+  // --- HAIR ---
   ctx.fillStyle = hairColour;
-  ctx.fillRect(x + 4, y - 1, 8, 2);
-  if (facingLeft) {
-    ctx.fillRect(x + 4, y - 1, 2, 4);
-  } else {
-    ctx.fillRect(x + 10, y - 1, 2, 4);
+
+  if (hairStyle === 'short') {
+    ctx.fillRect(x + 4, by - 2, 9, 2);
+    ctx.fillRect(x + 4, by - 1, 2, 2);
+    ctx.fillRect(x + 11, by - 1, 2, 2);
+  } else if (hairStyle === 'long') {
+    ctx.fillRect(x + 4, by - 2, 9, 2);
+    ctx.fillRect(x + 3, by - 1, 2, 6);
+    ctx.fillRect(x + 13, by - 1, 2, 6);
+    ctx.fillRect(x + 4, by - 1, 2, 2);
+    ctx.fillRect(x + 11, by - 1, 2, 2);
+  } else if (hairStyle === 'curly') {
+    ctx.fillRect(x + 4, by - 3, 9, 3);
+    ctx.fillRect(x + 3, by - 2, 2, 3);
+    ctx.fillRect(x + 13, by - 2, 2, 3);
+    ctx.fillRect(x + 5, by - 4, 2, 2);
+    ctx.fillRect(x + 9, by - 4, 2, 2);
+    ctx.fillRect(x + 7, by - 5, 3, 2);
+  } else if (hairStyle === 'bald') {
+    ctx.fillStyle = skinColour;
+    ctx.fillRect(x + 4, by - 2, 9, 1);
+  } else if (hairStyle === 'ponytail') {
+    ctx.fillRect(x + 4, by - 2, 9, 2);
+    ctx.fillRect(x + 4, by - 1, 2, 2);
+    ctx.fillRect(x + 11, by - 1, 2, 2);
+    ctx.fillRect(facingLeft ? x + 12 : x + 3, by - 2, 2, 8);
+  } else if (hairStyle === 'spiky') {
+    ctx.fillRect(x + 4, by - 2, 9, 2);
+    ctx.fillRect(x + 5, by - 4, 2, 3);
+    ctx.fillRect(x + 9, by - 4, 2, 3);
+    ctx.fillRect(x + 7, by - 3, 2, 2);
+    ctx.fillRect(x + 3, by - 3, 2, 2);
+    ctx.fillRect(x + 12, by - 3, 2, 2);
   }
 
-  // Eyes
-  ctx.fillStyle = '#222222';
-  if (facingLeft) {
-    ctx.fillRect(x + 5, y + 2, 1, 1);
-  } else {
-    ctx.fillRect(x + 10, y + 2, 1, 1);
+  if (hairHighlight && hairStyle !== 'bald') {
+    ctx.fillStyle = hairHighlight;
+    ctx.fillRect(x + 6, by - 2, 3, 1);
   }
 
-  // Mouth
-  ctx.fillStyle = '#c07050';
-  ctx.fillRect(x + 6, y + 4, 3, 1);
+  // --- FACE ---
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(ex, by + 1, 3, 2);
+  ctx.fillStyle = eyeColour;
+  ctx.fillRect(facingLeft ? ex : ex + 1, by + 1, 2, 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(facingLeft ? ex + 1 : ex + 2, by + 1, 1, 1);
+  ctx.fillStyle = hairColour;
+  ctx.fillRect(ex, by, 3, 1);
+  ctx.fillStyle = '#c8956a';
+  ctx.fillRect(x + 7, by + 3, 1, 1);
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(mx, by + 4, 3, 1);
+  ctx.fillStyle = '#c8956a';
+  ctx.fillRect(mx - 1, by + 4, 1, 1);
+  ctx.fillRect(mx + 3, by + 4, 1, 1);
+
+  if (hasBeard) {
+    ctx.fillStyle = hairColour;
+    ctx.fillRect(x + 5, by + 4, 7, 1);
+    ctx.fillRect(x + 4, by + 3, 1, 2);
+    ctx.fillRect(x + 12, by + 3, 1, 2);
+  }
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(x + 4, by - 2, 9, 7);
 }
 
 var player = {
@@ -76,6 +179,10 @@ var player = {
   height: 16,
   speed: 80,
   facingLeft: false,
+  walkFrame: 0,
+  walkTimer: 0,
+  walkInterval: 0.18,
+  isMoving: false,
 
   update(deltaTime, keys) {
     if (isDialogueActive()) return;
@@ -87,6 +194,21 @@ var player = {
 
     if (keys['ArrowLeft'])  this.facingLeft = true;
     if (keys['ArrowRight']) this.facingLeft = false;
+
+    this.isMoving = keys['ArrowLeft'] || keys['ArrowRight'] ||
+                    keys['ArrowUp']   || keys['ArrowDown'];
+
+    // Advance walk animation
+    if (this.isMoving) {
+      this.walkTimer += deltaTime;
+      if (this.walkTimer >= this.walkInterval) {
+        this.walkTimer = 0;
+        this.walkFrame = (this.walkFrame + 1) % 3;
+      }
+    } else {
+      this.walkFrame = 0;
+      this.walkTimer = 0;
+    }
 
     const canMoveX = isWalkable(newX, this.y) &&
                      isWalkable(newX + this.width - 1, this.y) &&
@@ -104,11 +226,15 @@ var player = {
 
   draw(ctx) {
     drawCharacter(ctx, this.x, this.y, {
-      skinColour:   '#f4c07a',
+      skinColour:   '#c68642',
       hairColour:   '#1a1a1a',
+      hairStyle:    'short',
       kitColour:    '#8B1A1A',
       kitSecondary: '#ffffff',
+      eyeColour:    '#3a6b8a',
       facingLeft:   this.facingLeft,
+      walkFrame:    this.walkFrame,
+      withPaddle:   false,
     });
   }
 };
