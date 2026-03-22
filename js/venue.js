@@ -128,7 +128,9 @@ const VENUES = {
           if (!STATE.racedLoughborough) {
             return [
               "Oh, you're Secklow? Small world.",
+              "seklow is actually one of my favourite teams.",
               "I actually paddle for Soaring Dragons.",
+              "my favourite race is the 2000m, especially at nottz",
               "Their rhythm section is terrifying. Fair warning.",
               "Good luck though — genuinely.",
             ];
@@ -612,15 +614,17 @@ const VENUES = {
         },
       },
       {
-        name: 'BDA Official',
+        name: 'Dave Bangs',
         x: 200, y: 60,
         colour: '#f0c040',
         get lines() {
           if (!STATE.londonStage) {
             return [
               "Welcome to the BDA National Championships.",
-              "Three finals — 200m, 500m, 2000m.",
+              "my name's Dave Bangs, I am head of the BDA",
               "Your season trophy points: " + STATE.trophyPoints + ".",
+              "I founded the club amathus in 1988",
+              "My favourite type of poat is the O1",
               "Good luck to all competing clubs.",
             ];
           }
