@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
 AudioManager.init();
+TouchControls.init();
 
 let gameStarted = false;
 const keys = {};
@@ -305,6 +306,14 @@ window.addEventListener('keyup', e => { keys[e.key] = false; });
 
 function update(deltaTime, timestamp) {
   if (!gameStarted) return;
+  // Clear arrow keys each frame so touch controls don't stick
+  if (TouchControls.active) {
+    keys['ArrowUp']    = false;
+    keys['ArrowDown']  = false;
+    keys['ArrowLeft']  = false;
+    keys['ArrowRight'] = false;
+  }
+  TouchControls.applyToKeys(keys);
   if (race.active) {
     race.update(deltaTime, timestamp);
     return;
@@ -336,8 +345,9 @@ function draw() {
     return;
   }
 
-  if (race.active || race.finished || race.showTutorial) {
+if (race.active || race.finished || race.showTutorial) {
     race.draw(ctx);
+    TouchControls.draw(ctx);
     return;
   }
 
@@ -487,6 +497,7 @@ function draw() {
     ctx.fillStyle = '#222';
     ctx.fillText('[ ` ] mute', 472, 424);
   }
+  TouchControls.draw(ctx);
 }
 
 let lastTime = 0;
