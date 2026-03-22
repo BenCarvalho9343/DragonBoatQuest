@@ -127,14 +127,16 @@ const VENUES = {
         get lines() {
           if (!STATE.racedLoughborough) {
             return [
-              "Soaring Dragons are well coached.",
-              "Their rhythm is almost perfect in the 500m.",
-              "Target their stamina in the 2000m — they fade.",
+              "Oh, you're Secklow? Small world.",
+              "I actually paddle for Soaring Dragons.",
+              "Their rhythm section is terrifying. Fair warning.",
+              "Good luck though — genuinely.",
             ];
           }
           return [
-            "Good race out there.",
-            "The Soar has a way of humbling everyone eventually.",
+            "Well raced. Told you they were good.",
+            "Come train with us sometime. Just kidding.",
+            "...mostly.",
           ];
         },
       },
