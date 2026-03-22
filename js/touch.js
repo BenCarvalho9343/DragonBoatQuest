@@ -32,7 +32,6 @@ const TouchControls = {
     canvas.addEventListener('touchmove', e => {
       e.preventDefault();
       Array.from(e.changedTouches).forEach(t => {
-        // Only update dpad on move
         const pos = this.getCanvasPos(t);
         if (pos.x < 140 && pos.y > 300) {
           this.handleDpad(pos.x, pos.y);
@@ -74,6 +73,44 @@ const TouchControls = {
       return;
     }
 
+    // --- MENU OPEN ---
+    if (Menu.open) {
+      if (Menu.confirmingRestart) {
+        if (x < 240 && y > 200 && y < 260) {
+          Menu.selectedOption = 0;
+          Menu.handleKey(' ');
+        } else if (x >= 240 && y > 200 && y < 260) {
+          Menu.selectedOption = 1;
+          Menu.handleKey(' ');
+        } else if (x < 240) {
+          Menu.handleKey('ArrowLeft');
+        } else {
+          Menu.handleKey('ArrowRight');
+        }
+        return;
+      }
+      // Tap an option
+      if (y > 124 && y < 340) {
+        const idx = Math.floor((y - 124) / 48);
+        if (idx >= 0 && idx <= 3) {
+          Menu.selectedOption = idx;
+          const opt = Menu.options[idx];
+          if (opt.action === 'music' || opt.action === 'sfx') {
+            // Left half = down, right half = up
+            if (x < 240) Menu.adjustValue(-1);
+            else Menu.adjustValue(1);
+          } else {
+            Menu.selectOption();
+          }
+        }
+      }
+      // Close via top right
+      if (x > 430 && y < 50) {
+        Menu.close();
+      }
+      return;
+    }
+
     // --- TOP BAR (y < 40) ---
     if (y < 40) {
       // Crew
@@ -88,12 +125,17 @@ const TouchControls = {
         return;
       }
       // Mute
-      if (x > 185 && x < 295) {
+      if (x >= 90 && x < 200) {
         AudioManager.toggleMute();
         return;
       }
+      // Menu / pause
+      if (x >= 200 && x < 290) {
+        if (gameStarted) Menu.toggle();
+        return;
+      }
       // Map
-      if (x > 400) {
+      if (x >= 390) {
         const venue = VENUES[STATE.currentVenue];
         const raced = venue && STATE[venue.raceStateFlag];
         if (raced && !venue.isFinale && !isDialogueActive() &&
@@ -107,51 +149,40 @@ const TouchControls = {
 
     // --- CREW SCREEN ---
     if (crewScreen.open) {
-      // Close — top right X button
       if (x > 430 && y < 80) {
         crewScreen.open = false;
         crewScreen.selectedIndex = null;
         crewScreen.scrollOffset = 0;
         return;
       }
-      if (y < 216) {
-        crewScreen.handleKey('ArrowUp');
-      } else {
-        crewScreen.handleKey('ArrowDown');
-      }
+      if (y < 216) crewScreen.handleKey('ArrowUp');
+      else crewScreen.handleKey('ArrowDown');
       return;
     }
 
     // --- TRAVEL MAP ---
     if (travelMap.open) {
-      // Close — top right
       if (x > 430 && y < 80) {
         travelMap.close();
         return;
       }
-      // Travel button
       if (y > 380) {
         travelMap.handleKey(' ');
         return;
       }
-      if (x < 240) {
-        travelMap.handleKey('ArrowLeft');
-      } else {
-        travelMap.handleKey('ArrowRight');
-      }
+      if (x < 240) travelMap.handleKey('ArrowLeft');
+      else travelMap.handleKey('ArrowRight');
       return;
     }
 
     // --- RACE ---
     if (race.active || race.showTutorial || race.finished) {
-// Bend button — wider touch zone
-if (race.active && race.distanceMode === '2000m' &&
+      if (race.active && race.distanceMode === '2000m' &&
           x < 100 && y > 305 && y < 370) {
         race.tapBend();
         this.bendPressed = true;
         return;
       }
-      // Tap — everything else
       this.tapPressed = true;
       if (race.showTutorial) { race.tap(); return; }
       if (race.active) { race.tap(); return; }
@@ -173,7 +204,7 @@ if (race.active && race.distanceMode === '2000m' &&
       return;
     }
 
-    // Distance button bottom right area left button
+    // Distance button
     if (x > 300 && x < 390 && y > 340 && y < 420) {
       const venue = VENUES[STATE.currentVenue];
       if (venue && !STATE[venue.raceStateFlag] && !venue.isFinale) {
@@ -191,7 +222,6 @@ if (race.active && race.distanceMode === '2000m' &&
     // ACT button bottom right
     if (x > 370 && y > 330) {
       this.tapPressed = true;
-      // Handle all space-bar actions directly here
       if (STATE.currentVenue === 'london' &&
           STATE.londonStage === 'complete' &&
           !race.active && !race.finished) {
@@ -232,20 +262,18 @@ if (race.active && race.distanceMode === '2000m' &&
           AudioManager.playTrack('race');
           return;
         }
-if (onDock && needsTim) {
+        if (onDock && needsTim) {
           activeNPCIndex = 0;
           activeLineIndex = 0;
           return;
         }
 
-        // Check for nearby NPCs even when not on dock
         const savedKey = keys[' '];
         keys[' '] = true;
         updateNPCs(keys, player);
         keys[' '] = savedKey;
 
       } else {
-        // Advance existing dialogue
         const savedKey2 = keys[' '];
         keys[' '] = true;
         updateNPCs(keys, player);
@@ -282,11 +310,20 @@ if (onDock && needsTim) {
     // Mute button
     ctx.fillStyle = AudioManager.muted ?
       'rgba(200,50,50,0.7)' : 'rgba(255,255,255,0.2)';
-    ctx.fillRect(188, 3, 104, 32);
+    ctx.fillRect(91, 3, 106, 32);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 9px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(AudioManager.muted ? 'UNMUTE' : 'MUTE', 240, 23);
+    ctx.fillText(AudioManager.muted ? 'UNMUTE' : 'MUTE', 144, 23);
+
+    // Menu / pause button
+    ctx.fillStyle = Menu.open ?
+      'rgba(240,192,64,0.9)' : 'rgba(255,255,255,0.2)';
+    ctx.fillRect(201, 3, 78, 32);
+    ctx.fillStyle = Menu.open ? '#1a1a1a' : '#ffffff';
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('II', 240, 23);
 
     // Map button
     const venueM = VENUES[STATE.currentVenue];
@@ -314,8 +351,7 @@ if (onDock && needsTim) {
 
     // Don't show movement controls during race
     if (race.active || race.showTutorial || race.finished) {
-// Bend button
-if (race.active && race.distanceMode === '2000m') {
+      if (race.active && race.distanceMode === '2000m') {
         ctx.fillStyle = this.bendPressed ?
           'rgba(255,153,0,0.9)' : 'rgba(255,153,0,0.5)';
         ctx.fillRect(4, 310, 90, 52);
@@ -332,7 +368,6 @@ if (race.active && race.distanceMode === '2000m') {
         ctx.fillText('bend shows', 49, 358);
       }
 
-      // Tap button
       ctx.fillStyle = this.tapPressed ?
         'rgba(240,192,64,0.7)' : 'rgba(240,192,64,0.25)';
       ctx.beginPath();
@@ -376,7 +411,7 @@ if (race.active && race.distanceMode === '2000m') {
       ctx.fillText(btn.label, btn.x, btn.y + 5);
     });
 
-    // Distance cycle button — only on dock before racing
+    // Distance cycle button
     const venueD = VENUES[STATE.currentVenue];
     if (venueD && !venueD.isFinale) {
       const b = venueD.dockBounds;

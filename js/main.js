@@ -174,6 +174,21 @@ window.addEventListener('keydown', e => {
   if (!gameStarted) { startGame(); return; }
   keys[e.key] = true;
   e.preventDefault();
+  // Pause menu
+  if (e.key === 'Escape') {
+    if (Menu.open) {
+      Menu.handleKey('Escape');
+    } else if (gameStarted && !race.active) {
+      Menu.toggle();
+    }
+    return;
+  }
+
+  // Pass keys to menu if open
+  if (Menu.open) {
+    Menu.handleKey(e.key);
+    return;
+  }
 
   if (e.key === '`') {
     AudioManager.toggleMute();
@@ -306,6 +321,7 @@ window.addEventListener('keyup', e => { keys[e.key] = false; });
 
 function update(deltaTime, timestamp) {
   if (!gameStarted) return;
+  if (Menu.open) return;
   // Clear arrow keys each frame so touch controls don't stick
   if (TouchControls.active) {
     keys['ArrowUp']    = false;
@@ -498,6 +514,7 @@ if (race.active || race.finished || race.showTutorial) {
     ctx.fillText('[ ` ] mute', 472, 424);
   }
   TouchControls.draw(ctx);
+  Menu.draw(ctx);
 }
 
 let lastTime = 0;
