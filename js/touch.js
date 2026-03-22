@@ -73,9 +73,8 @@ const TouchControls = {
       return;
     }
 
-// --- LEAGUE TABLE OPEN ---
+    // --- LEAGUE TABLE OPEN ---
     if (LeagueTable.open) {
-      // Only close if tapping outside the panel
       if (x < 20 || x > 460 || y < 20 || y > 412) {
         LeagueTable.close();
       }
@@ -98,14 +97,12 @@ const TouchControls = {
         }
         return;
       }
-      // Tap an option
       if (y > 124 && y < 340) {
         const idx = Math.floor((y - 124) / 48);
-        if (idx >= 0 && idx <= 3) {
+        if (idx >= 0 && idx <= 4) {
           Menu.selectedOption = idx;
           const opt = Menu.options[idx];
           if (opt.action === 'music' || opt.action === 'sfx') {
-            // Left half = down, right half = up
             if (x < 240) Menu.adjustValue(-1);
             else Menu.adjustValue(1);
           } else {
@@ -113,17 +110,14 @@ const TouchControls = {
           }
         }
       }
-      // Close via top right
-      if (x > 430 && y < 50) {
-        Menu.close();
-      }
+      if (x > 430 && y < 50) Menu.close();
       return;
     }
 
     // --- TOP BAR (y < 40) ---
     if (y < 40) {
       // Crew
-      if (x < 90) {
+      if (x < 68) {
         if (!race.active && !race.showTutorial && !isDialogueActive()) {
           crewScreen.open = !crewScreen.open;
           if (!crewScreen.open) {
@@ -133,7 +127,7 @@ const TouchControls = {
         }
         return;
       }
-   // League table
+      // League table
       if (x >= 68 && x < 136) {
         const hasRaced = STATE.racedCaldecotte ||
                          STATE.racedLoughborough;
@@ -145,23 +139,29 @@ const TouchControls = {
         AudioManager.toggleMute();
         return;
       }
-      // Menu
-      if (x >= 218 && x < 264) {
-        if (gameStarted) Menu.toggle();
-        return;
-      }
       // Menu / pause
-      if (x >= 200 && x < 290) {
+      if (x >= 218 && x < 264) {
         if (gameStarted) Menu.toggle();
         return;
       }
       // Map
       if (x >= 390) {
-        const venue = VENUES[STATE.currentVenue];
-        const raced = venue && STATE[venue.raceStateFlag];
-        if (raced && !venue.isFinale && !isDialogueActive() &&
-            !race.active) {
-          travelMap.open ? travelMap.close() : travelMap.open_map();
+        if (STATE.inWorldChamps) {
+          const wv = WORLD_VENUES[STATE.currentWorldVenue];
+          const raced = wv && STATE[wv.raceStateFlag];
+          if (raced && !wv.isWorldFinale && !isDialogueActive() &&
+              !race.active) {
+            worldTravelMap.open ?
+              worldTravelMap.close() :
+              worldTravelMap.open_map();
+          }
+        } else {
+          const venue = VENUES[STATE.currentVenue];
+          const raced = venue && STATE[venue.raceStateFlag];
+          if (raced && !venue.isFinale && !isDialogueActive() &&
+              !race.active) {
+            travelMap.open ? travelMap.close() : travelMap.open_map();
+          }
         }
         return;
       }
@@ -178,6 +178,21 @@ const TouchControls = {
       }
       if (y < 216) crewScreen.handleKey('ArrowUp');
       else crewScreen.handleKey('ArrowDown');
+      return;
+    }
+
+    // --- WORLD TRAVEL MAP ---
+    if (worldTravelMap && worldTravelMap.open) {
+      if (x > 430 && y < 80) {
+        worldTravelMap.close();
+        return;
+      }
+      if (y > 380) {
+        worldTravelMap.handleKey(' ');
+        return;
+      }
+      if (x < 240) worldTravelMap.handleKey('ArrowLeft');
+      else worldTravelMap.handleKey('ArrowRight');
       return;
     }
 
@@ -209,9 +224,13 @@ const TouchControls = {
       if (race.active) { race.tap(); return; }
       if (race.finished) {
         race.finished = false;
-        AudioManager.playTrack(
-          AudioManager.getTrackForVenue(STATE.currentVenue)
-        );
+        if (STATE.inWorldChamps) {
+          AudioManager.playTrack('overworld');
+        } else {
+          AudioManager.playTrack(
+            AudioManager.getTrackForVenue(STATE.currentVenue)
+          );
+        }
         return;
       }
       return;
@@ -227,14 +246,30 @@ const TouchControls = {
 
     // Distance button
     if (x > 300 && x < 390 && y > 340 && y < 420) {
-      const venue = VENUES[STATE.currentVenue];
-      if (venue && !STATE[venue.raceStateFlag] && !venue.isFinale) {
-        const b = venue.dockBounds;
-        const onDock = player.x > b.x1 && player.x < b.x2 &&
-                       player.y > b.y1 && player.y < b.y2;
-        if (onDock) {
-          const idx = distances.indexOf(selectedDistance);
-          selectedDistance = distances[(idx + 1) % distances.length];
+      if (STATE.inWorldChamps) {
+        const wv = WORLD_VENUES[STATE.currentWorldVenue];
+        if (wv && !STATE[wv.raceStateFlag] && !wv.isWorldFinale) {
+          const b = wv.dockBounds;
+          const onDock = player.x > b.x1 && player.x < b.x2 &&
+                         player.y > b.y1 && player.y < b.y2;
+          if (onDock) {
+            const idx = distances.indexOf(selectedDistance);
+            selectedDistance =
+              distances[(idx + 1) % distances.length];
+          }
+        }
+      } else {
+        const venue = VENUES[STATE.currentVenue];
+        if (venue && !STATE[venue.raceStateFlag] &&
+            !venue.isFinale) {
+          const b = venue.dockBounds;
+          const onDock = player.x > b.x1 && player.x < b.x2 &&
+                         player.y > b.y1 && player.y < b.y2;
+          if (onDock) {
+            const idx = distances.indexOf(selectedDistance);
+            selectedDistance =
+              distances[(idx + 1) % distances.length];
+          }
         }
       }
       return;
@@ -243,14 +278,86 @@ const TouchControls = {
     // ACT button bottom right
     if (x > 370 && y > 330) {
       this.tapPressed = true;
-      if (STATE.currentVenue === 'london' &&
-          STATE.londonStage === 'complete' &&
+
+      // World transition screen
+      if (STATE.worldUnlocked && STATE.inWorldChamps &&
+          !STATE.racedDuisburg &&
+          STATE.londonStage !== 'worldTransitionDone' &&
           !race.active && !race.finished) {
-        STATE.londonStage = 'done';
+        AudioManager.playTrack('overworld');
+        player.x = 64;
+        player.y = 80;
+        activeNPCIndex = null;
+        activeLineIndex = 0;
+        STATE.londonStage = 'worldTransitionDone';
         STATE.save();
         return;
       }
+
+      // London ceremony
+      if (!STATE.inWorldChamps &&
+          STATE.londonStage === 'complete' &&
+          !race.active && !race.finished) {
+        if (!STATE.worldUnlocked) {
+          STATE.worldUnlocked = true;
+          STATE.inWorldChamps = true;
+          STATE.currentWorldVenue = 'duisburg';
+          STATE.londonStage = 'done';
+          STATE.save();
+          AudioManager.playTrack('overworld');
+        } else {
+          STATE.londonStage = 'done';
+          STATE.save();
+        }
+        return;
+      }
+
+      // World ceremony
+      if (STATE.inWorldChamps &&
+          STATE.worldFinalStage === 'complete' &&
+          !race.active && !race.finished) {
+        STATE.worldFinalStage = 'done';
+        STATE.save();
+        return;
+      }
+
       if (!isDialogueActive()) {
+        // World venues
+        if (STATE.inWorldChamps) {
+          const wv = WORLD_VENUES[STATE.currentWorldVenue];
+          if (!wv) return;
+          const b = wv.dockBounds;
+          const onDock = player.x > b.x1 && player.x < b.x2 &&
+                         player.y > b.y1 && player.y < b.y2;
+
+if (wv.isWorldFinale) {
+            const nextDist = getWorldFinalRaceDistance();
+            const needsDebrief =
+              STATE.worldFinalStage === 'after200' ||
+              STATE.worldFinalStage === 'after500';
+            if (onDock && nextDist && !needsDebrief) {
+              race.start(nextDist);
+              AudioManager.playTrack('race');
+              return;
+            }
+          } else {
+            const alreadyRaced = STATE[wv.raceStateFlag];
+            if (onDock && !alreadyRaced) {
+              race.start(selectedDistance);
+              AudioManager.playTrack('race');
+              return;
+            }
+          }
+
+          // NPC interaction for world venues
+          const savedKey = keys[' '];
+          keys[' '] = true;
+          updateNPCs(keys, player);
+          keys[' '] = savedKey;
+          return;
+        }
+
+        // National League venues
         const venue = VENUES[STATE.currentVenue];
         if (!venue) return;
         const b = venue.dockBounds;
@@ -267,10 +374,8 @@ const TouchControls = {
             AudioManager.playTrack('race');
             return;
           }
-          if (onDock && needsDebrief) {
-            activeNPCIndex = 0;
-            activeLineIndex = 0;
-            return;
+if (onDock && needsDebrief) {
+            // Let NPC proximity handle Tim
           }
           return;
         }
@@ -315,39 +420,40 @@ const TouchControls = {
   draw(ctx) {
     if (!this.active) return;
 
-  // --- TOP BAR ---
+    // --- TOP BAR ---
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(0, 0, 480, 38);
 
     // Crew button
     ctx.fillStyle = crewScreen.open ?
       'rgba(240,192,64,0.9)' : 'rgba(255,255,255,0.2)';
-    ctx.fillRect(3, 3, 64, 32);
+    ctx.fillRect(3, 3, 62, 32);
     ctx.fillStyle = crewScreen.open ? '#1a1a1a' : '#ffffff';
     ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('CREW', 35, 23);
+    ctx.fillText('CREW', 34, 23);
 
     // League table button
-    const hasRaced = STATE.racedCaldecotte || STATE.racedLoughborough;
+    const hasRaced = STATE.racedCaldecotte ||
+                     STATE.racedLoughborough;
     if (hasRaced) {
       ctx.fillStyle = LeagueTable.open ?
         'rgba(240,192,64,0.9)' : 'rgba(255,255,255,0.2)';
-      ctx.fillRect(71, 3, 64, 32);
+      ctx.fillRect(69, 3, 64, 32);
       ctx.fillStyle = LeagueTable.open ? '#1a1a1a' : '#ffffff';
       ctx.font = 'bold 8px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('TABLE', 103, 23);
+      ctx.fillText('TABLE', 101, 23);
     }
 
     // Mute button
     ctx.fillStyle = AudioManager.muted ?
       'rgba(200,50,50,0.7)' : 'rgba(255,255,255,0.2)';
-    ctx.fillRect(139, 3, 76, 32);
+    ctx.fillRect(137, 3, 78, 32);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(AudioManager.muted ? 'UNMUTE' : 'MUTE', 177, 23);
+    ctx.fillText(AudioManager.muted ? 'UNMUTE' : 'MUTE', 176, 23);
 
     // Menu / pause button
     ctx.fillStyle = Menu.open ?
@@ -359,20 +465,35 @@ const TouchControls = {
     ctx.fillText('II', 240, 23);
 
     // Map button
-    const venueM = VENUES[STATE.currentVenue];
-    const racedM = venueM && STATE[venueM.raceStateFlag];
-    if (racedM && venueM && !venueM.isFinale && !race.active) {
-      ctx.fillStyle = travelMap.open ?
-        'rgba(240,192,64,0.9)' : 'rgba(255,255,255,0.2)';
-      ctx.fillRect(393, 3, 84, 32);
-      ctx.fillStyle = travelMap.open ? '#1a1a1a' : '#ffffff';
-      ctx.font = 'bold 9px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('MAP', 435, 23);
+    if (STATE.inWorldChamps) {
+      const wv = WORLD_VENUES[STATE.currentWorldVenue];
+      const racedW = wv && STATE[wv.raceStateFlag];
+      if (racedW && wv && !wv.isWorldFinale && !race.active) {
+        ctx.fillStyle = worldTravelMap.open ?
+          'rgba(240,192,64,0.9)' : 'rgba(255,255,255,0.2)';
+        ctx.fillRect(393, 3, 84, 32);
+        ctx.fillStyle = worldTravelMap.open ? '#1a1a1a' : '#ffffff';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('MAP', 435, 23);
+      }
+    } else {
+      const venueM = VENUES[STATE.currentVenue];
+      const racedM = venueM && STATE[venueM.raceStateFlag];
+      if (racedM && venueM && !venueM.isFinale && !race.active) {
+        ctx.fillStyle = travelMap.open ?
+          'rgba(240,192,64,0.9)' : 'rgba(255,255,255,0.2)';
+        ctx.fillRect(393, 3, 84, 32);
+        ctx.fillStyle = travelMap.open ? '#1a1a1a' : '#ffffff';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('MAP', 435, 23);
+      }
     }
 
     // Close button for crew/map screens
-    if (crewScreen.open || travelMap.open) {
+    if (crewScreen.open || travelMap.open ||
+        (worldTravelMap && worldTravelMap.open)) {
       ctx.fillStyle = 'rgba(200,50,50,0.8)';
       ctx.fillRect(430, 42, 46, 32);
       ctx.fillStyle = '#ffffff';
@@ -445,28 +566,55 @@ const TouchControls = {
     });
 
     // Distance cycle button
-    const venueD = VENUES[STATE.currentVenue];
-    if (venueD && !venueD.isFinale) {
-      const b = venueD.dockBounds;
-      const onDock = player.x > b.x1 && player.x < b.x2 &&
-                     player.y > b.y1 && player.y < b.y2;
-      const alreadyRaced = STATE[venueD.raceStateFlag];
-      if (onDock && !alreadyRaced) {
-        ctx.fillStyle = 'rgba(100,200,255,0.3)';
-        ctx.fillRect(302, 338, 76, 76);
-        ctx.strokeStyle = 'rgba(100,200,255,0.6)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(302, 338, 76, 76);
-        ctx.fillStyle = '#88ddff';
-        ctx.font = 'bold 8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('DIST', 340, 358);
-        ctx.font = 'bold 11px monospace';
-        ctx.fillText(selectedDistance, 340, 376);
-        ctx.font = '7px monospace';
-        ctx.fillStyle = '#aaddff';
-        ctx.fillText('tap to', 340, 392);
-        ctx.fillText('change', 340, 403);
+    if (STATE.inWorldChamps) {
+      const wvD = WORLD_VENUES[STATE.currentWorldVenue];
+      if (wvD && !wvD.isWorldFinale) {
+        const b = wvD.dockBounds;
+        const onDock = player.x > b.x1 && player.x < b.x2 &&
+                       player.y > b.y1 && player.y < b.y2;
+        const alreadyRaced = STATE[wvD.raceStateFlag];
+        if (onDock && !alreadyRaced) {
+          ctx.fillStyle = 'rgba(100,200,255,0.3)';
+          ctx.fillRect(302, 338, 76, 76);
+          ctx.strokeStyle = 'rgba(100,200,255,0.6)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(302, 338, 76, 76);
+          ctx.fillStyle = '#88ddff';
+          ctx.font = 'bold 8px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('DIST', 340, 358);
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(selectedDistance, 340, 376);
+          ctx.font = '7px monospace';
+          ctx.fillStyle = '#aaddff';
+          ctx.fillText('tap to', 340, 392);
+          ctx.fillText('change', 340, 403);
+        }
+      }
+    } else {
+      const venueD = VENUES[STATE.currentVenue];
+      if (venueD && !venueD.isFinale) {
+        const b = venueD.dockBounds;
+        const onDock = player.x > b.x1 && player.x < b.x2 &&
+                       player.y > b.y1 && player.y < b.y2;
+        const alreadyRaced = STATE[venueD.raceStateFlag];
+        if (onDock && !alreadyRaced) {
+          ctx.fillStyle = 'rgba(100,200,255,0.3)';
+          ctx.fillRect(302, 338, 76, 76);
+          ctx.strokeStyle = 'rgba(100,200,255,0.6)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(302, 338, 76, 76);
+          ctx.fillStyle = '#88ddff';
+          ctx.font = 'bold 8px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('DIST', 340, 358);
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(selectedDistance, 340, 376);
+          ctx.font = '7px monospace';
+          ctx.fillStyle = '#aaddff';
+          ctx.fillText('tap to', 340, 392);
+          ctx.fillText('change', 340, 403);
+        }
       }
     }
 

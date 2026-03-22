@@ -17,13 +17,23 @@ function getLondonRaceDistance() {
   return null;
 }
 
+function getWorldFinalRaceDistance() {
+  if (!STATE.worldFinalStage || STATE.worldFinalStage === null)
+    return '200m';
+  if (STATE.worldFinalStage === '200debriefed') return '500m';
+  if (STATE.worldFinalStage === '500debriefed') return '2000m';
+  return null;
+}
+
 function drawStartScreen() {
   ctx.fillStyle = '#050510';
   ctx.fillRect(0, 0, 480, 432);
 
   for (let i = 0; i < 40; i++) {
-    ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + (i % 5) * 0.14) + ')';
-    ctx.fillRect((i * 73) % 460 + 10, (i * 47) % 200 + 10, 1, 1);
+    ctx.fillStyle = 'rgba(255,255,255,' +
+      (0.3 + (i % 5) * 0.14) + ')';
+    ctx.fillRect((i * 73) % 460 + 10,
+      (i * 47) % 200 + 10, 1, 1);
   }
 
   ctx.fillStyle = '#8B1A1A';
@@ -50,13 +60,20 @@ function drawStartScreen() {
   ctx.font = '10px monospace';
   ctx.fillText('Secklow Hundred — National League', 240, 240);
 
+  if (STATE.worldUnlocked) {
+    ctx.fillStyle = '#4488ff';
+    ctx.font = '9px monospace';
+    ctx.fillText('World Championships unlocked!', 240, 256);
+  }
+
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 11px monospace';
   ctx.fillText('Click or tap to start', 240, 290);
 
   ctx.fillStyle = '#444';
   ctx.font = '8px monospace';
-  ctx.fillText('Arrow keys to move  •  Space to interact', 240, 316);
+  ctx.fillText('Arrow keys to move  •  Space to interact',
+    240, 316);
   ctx.fillText('C = crew  •  M = map  •  ` = mute', 240, 330);
 }
 
@@ -76,6 +93,54 @@ canvas.addEventListener('touchstart', e => {
   startGame();
 }, { passive: false });
 
+function drawWorldTransition(ctx) {
+  ctx.fillStyle = '#020210';
+  ctx.fillRect(0, 0, 480, 432);
+
+  for (let i = 0; i < 60; i++) {
+    ctx.fillStyle = 'rgba(255,255,255,' +
+      (0.2 + (i % 7) * 0.08) + ')';
+    ctx.fillRect((i * 53) % 470 + 5,
+      (i * 37) % 380 + 5, 1, 1);
+  }
+
+  ctx.fillStyle = '#4488ff';
+  ctx.font = 'bold 14px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('IDBF WORLD CHAMPIONSHIPS', 240, 160);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '10px monospace';
+  ctx.fillText('Secklow Hundred have been nominated', 240, 185);
+  ctx.fillText('to represent Great Britain.', 240, 200);
+
+  ctx.fillStyle = '#aaaaaa';
+  ctx.font = '9px monospace';
+  ctx.fillText('National League trophy points: ' +
+    STATE.trophyPoints, 240, 225);
+  ctx.fillText('World Championship points start fresh.', 240, 240);
+
+  ctx.fillStyle = '#8B1A1A';
+  ctx.fillRect(200, 260, 80, 40);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(200, 278, 80, 4);
+  ctx.fillRect(238, 260, 4, 40);
+  ctx.fillStyle = '#00008B';
+  ctx.fillRect(204, 260, 32, 18);
+  ctx.fillRect(204, 282, 32, 18);
+  ctx.fillRect(244, 260, 32, 18);
+  ctx.fillRect(244, 282, 32, 18);
+
+  ctx.fillStyle = '#f0c040';
+  ctx.font = 'bold 10px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('First stop: Duisburg, Germany', 240, 328);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 10px monospace';
+  ctx.fillText('[ Space ] begin World Championships', 240, 360);
+}
+
 function drawCeremony(ctx) {
   const ending = STATE.getLondonEnding();
   const wins = STATE.getLondonWins();
@@ -84,8 +149,10 @@ function drawCeremony(ctx) {
   ctx.fillRect(0, 0, 480, 432);
 
   for (let i = 0; i < 40; i++) {
-    ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + (i % 5) * 0.14) + ')';
-    ctx.fillRect((i * 73) % 460 + 10, (i * 47) % 200 + 10, 1, 1);
+    ctx.fillStyle = 'rgba(255,255,255,' +
+      (0.3 + (i % 5) * 0.14) + ')';
+    ctx.fillRect((i * 73) % 460 + 10,
+      (i * 47) % 200 + 10, 1, 1);
   }
 
   ctx.fillStyle = '#0a1a3a';
@@ -143,26 +210,40 @@ function drawCeremony(ctx) {
   const r2k  = STATE.london2000Result === 'win' ? 'WIN' : 'LOSS';
 
   ctx.font = '9px monospace';
-  ctx.fillStyle = STATE.london200Result === 'win' ? '#1D9E75' : '#cc3333';
+  ctx.fillStyle = STATE.london200Result === 'win' ?
+    '#1D9E75' : '#cc3333';
   ctx.fillText('200m: ' + r200, 240, 295);
-  ctx.fillStyle = STATE.london500Result === 'win' ? '#1D9E75' : '#cc3333';
+  ctx.fillStyle = STATE.london500Result === 'win' ?
+    '#1D9E75' : '#cc3333';
   ctx.fillText('500m: ' + r500, 240, 308);
-  ctx.fillStyle = STATE.london2000Result === 'win' ? '#1D9E75' : '#cc3333';
+  ctx.fillStyle = STATE.london2000Result === 'win' ?
+    '#1D9E75' : '#cc3333';
   ctx.fillText('2000m: ' + r2k, 240, 321);
 
   ctx.fillStyle = '#aaaaaa';
   ctx.font = '8px monospace';
   if (ending === 'champion') {
-    ctx.fillText('"I\'ve never been prouder of a crew."', 240, 345);
+    ctx.fillText('"I\'ve never been prouder of a crew."',
+      240, 345);
   } else if (ending === 'runnersup') {
-    ctx.fillText('"We\'ll be back. And we\'ll win it."', 240, 345);
+    ctx.fillText('"We\'ll be back. And we\'ll win it."',
+      240, 345);
   } else {
-    ctx.fillText('"This club is going places. Trust me."', 240, 345);
+    ctx.fillText('"This club is going places. Trust me."',
+      240, 345);
   }
 
-  ctx.fillStyle = '#555';
-  ctx.font = '8px monospace';
-  ctx.fillText('[ Space ] return to the dock', 240, 380);
+  // World Champs unlock prompt
+  if (!STATE.worldUnlocked) {
+    ctx.fillStyle = '#4488ff';
+    ctx.font = 'bold 9px monospace';
+    ctx.fillText('[ Space ] unlock World Championships!',
+      240, 372);
+  } else {
+    ctx.fillStyle = '#555';
+    ctx.font = '8px monospace';
+    ctx.fillText('[ Space ] continue', 240, 372);
+  }
 
   for (let i = 0; i < 6; i++) {
     ctx.fillStyle = 'rgba(255,255,200,0.06)';
@@ -174,30 +255,29 @@ window.addEventListener('keydown', e => {
   if (!gameStarted) { startGame(); return; }
   keys[e.key] = true;
   e.preventDefault();
-  // Pause menu
-if (e.key === 'Escape') {
+
+  if (e.key === 'Escape') {
     if (Menu.open) {
       Menu.handleKey('Escape');
     } else if (LeagueTable.open) {
       LeagueTable.close();
+    } else if (worldTravelMap.open) {
+      worldTravelMap.close();
     } else if (gameStarted && !race.active) {
       Menu.toggle();
     }
     return;
   }
-  // League table
+
+  if (Menu.open) { Menu.handleKey(e.key); return; }
+  if (LeagueTable.open) { return; }
+
   if (e.key === 'l' || e.key === 'L') {
-    if (gameStarted && !race.active && !race.showTutorial) {
+    if (!race.active && !race.showTutorial) {
       const hasRaced = STATE.racedCaldecotte ||
                        STATE.racedLoughborough;
       if (hasRaced) LeagueTable.toggle();
     }
-    return;
-  }
-
-  // Pass keys to menu if open
-  if (Menu.open) {
-    Menu.handleKey(e.key);
     return;
   }
 
@@ -216,12 +296,28 @@ if (e.key === 'Escape') {
   if (e.key === 'm' || e.key === 'M') {
     if (!race.active && !race.showTutorial &&
         !isDialogueActive() && !crewScreen.open) {
-      const venue = VENUES[STATE.currentVenue];
-      const raced = venue && STATE[venue.raceStateFlag];
-      if (raced && !venue.isFinale) {
-        travelMap.open ? travelMap.close() : travelMap.open_map();
+      if (STATE.inWorldChamps) {
+        const wv = WORLD_VENUES[STATE.currentWorldVenue];
+        const raced = wv && STATE[wv.raceStateFlag];
+        if (raced && !wv.isWorldFinale) {
+          worldTravelMap.open ?
+            worldTravelMap.close() :
+            worldTravelMap.open_map();
+        }
+      } else {
+        const venue = VENUES[STATE.currentVenue];
+        const raced = venue && STATE[venue.raceStateFlag];
+        if (raced && !venue.isFinale) {
+          travelMap.open ? travelMap.close() :
+            travelMap.open_map();
+        }
       }
     }
+    return;
+  }
+
+  if (worldTravelMap.open) {
+    worldTravelMap.handleKey(e.key);
     return;
   }
 
@@ -231,7 +327,8 @@ if (e.key === 'Escape') {
   }
 
   if (e.key === 'c' || e.key === 'C') {
-    if (!race.active && !race.showTutorial && !isDialogueActive()) {
+    if (!race.active && !race.showTutorial &&
+        !isDialogueActive()) {
       crewScreen.open = !crewScreen.open;
       if (!crewScreen.open) {
         crewScreen.selectedIndex = null;
@@ -247,7 +344,8 @@ if (e.key === 'Escape') {
   }
 
   if (e.key === 'Tab') {
-    if (STATE.currentVenue !== 'london') {
+    if (!STATE.inWorldChamps &&
+        STATE.currentVenue !== 'london') {
       const venue = VENUES[STATE.currentVenue];
       if (venue) {
         const b = venue.dockBounds;
@@ -256,7 +354,23 @@ if (e.key === 'Escape') {
         const alreadyRaced = STATE[venue.raceStateFlag];
         if (onDock && !alreadyRaced) {
           const idx = distances.indexOf(selectedDistance);
-          selectedDistance = distances[(idx + 1) % distances.length];
+          selectedDistance =
+            distances[(idx + 1) % distances.length];
+        }
+      }
+    }
+    if (STATE.inWorldChamps &&
+        STATE.currentWorldVenue !== 'racice') {
+      const wv = WORLD_VENUES[STATE.currentWorldVenue];
+      if (wv) {
+        const b = wv.dockBounds;
+        const onDock = player.x > b.x1 && player.x < b.x2 &&
+                       player.y > b.y1 && player.y < b.y2;
+        const alreadyRaced = STATE[wv.raceStateFlag];
+        if (onDock && !alreadyRaced) {
+          const idx = distances.indexOf(selectedDistance);
+          selectedDistance =
+            distances[(idx + 1) % distances.length];
         }
       }
     }
@@ -264,10 +378,45 @@ if (e.key === 'Escape') {
   }
 
   if (e.key === ' ') {
-    if (STATE.currentVenue === 'london' &&
+    // World ceremony — dismiss and play again
+    if (STATE.inWorldChamps &&
+        STATE.worldFinalStage === 'complete' &&
+        !race.active && !race.finished) {
+      STATE.worldFinalStage = 'done';
+      STATE.save();
+      return;
+    }
+
+    // World transition screen
+    if (!STATE.inWorldChamps &&
         STATE.londonStage === 'complete' &&
         !race.active && !race.finished) {
-      STATE.londonStage = 'done';
+      if (!STATE.worldUnlocked) {
+        STATE.worldUnlocked = true;
+        STATE.inWorldChamps = true;
+        STATE.currentWorldVenue = 'duisburg';
+        STATE.londonStage = 'done';
+        STATE.save();
+        AudioManager.playTrack('overworld');
+        return;
+      } else {
+        STATE.londonStage = 'done';
+        STATE.save();
+        return;
+      }
+    }
+
+// World transition screen — Space to begin
+    if (STATE.worldUnlocked && STATE.inWorldChamps &&
+        !STATE.racedDuisburg &&
+        STATE.londonStage !== 'worldTransitionDone' &&
+        !race.active && !race.finished) {
+      AudioManager.playTrack('overworld');
+      player.x = 64;
+      player.y = 80;
+      activeNPCIndex = null;
+      activeLineIndex = 0;
+      STATE.londonStage = 'worldTransitionDone';
       STATE.save();
       return;
     }
@@ -277,13 +426,51 @@ if (e.key === 'Escape') {
 
     if (race.finished) {
       race.finished = false;
-      AudioManager.playTrack(
-        AudioManager.getTrackForVenue(STATE.currentVenue)
-      );
+      if (STATE.inWorldChamps) {
+        AudioManager.playTrack('overworld');
+      } else {
+        AudioManager.playTrack(
+          AudioManager.getTrackForVenue(STATE.currentVenue)
+        );
+      }
       return;
     }
 
     if (!isDialogueActive()) {
+      // World venues
+      if (STATE.inWorldChamps) {
+        const wv = WORLD_VENUES[STATE.currentWorldVenue];
+        if (!wv) return;
+        const b = wv.dockBounds;
+        const onDock = player.x > b.x1 && player.x < b.x2 &&
+                       player.y > b.y1 && player.y < b.y2;
+
+        if (wv.isWorldFinale) {
+          const nextDist = getWorldFinalRaceDistance();
+          const needsDebrief =
+            STATE.worldFinalStage === 'after200' ||
+            STATE.worldFinalStage === 'after500';
+          if (onDock && nextDist && !needsDebrief) {
+            race.start(nextDist);
+            AudioManager.playTrack('race');
+            return;
+          }
+if (onDock && needsDebrief) {
+            // Let NPC proximity handle Tim
+          }
+          return;
+        }
+
+        const alreadyRaced = STATE[wv.raceStateFlag];
+        if (onDock && !alreadyRaced) {
+          race.start(selectedDistance);
+          AudioManager.playTrack('race');
+          return;
+        }
+        return;
+      }
+
+      // National League venues
       const venue = VENUES[STATE.currentVenue];
       if (!venue) return;
 
@@ -296,7 +483,6 @@ if (e.key === 'Escape') {
         const needsDebrief =
           STATE.londonStage === 'after200' ||
           STATE.londonStage === 'after500';
-
         if (onDock && nextDist && !needsDebrief) {
           race.start(nextDist);
           AudioManager.playTrack('race');
@@ -334,7 +520,7 @@ function update(deltaTime, timestamp) {
   if (!gameStarted) return;
   if (Menu.open) return;
   if (LeagueTable.open) return;
-  // Clear arrow keys each frame so touch controls don't stick
+
   if (TouchControls.active) {
     keys['ArrowUp']    = false;
     keys['ArrowDown']  = false;
@@ -342,21 +528,38 @@ function update(deltaTime, timestamp) {
     keys['ArrowRight'] = false;
   }
   TouchControls.applyToKeys(keys);
+
   if (race.active) {
     race.update(deltaTime, timestamp);
     return;
   }
-  travelMap.update(deltaTime);
-  if (travelMap.open) return;
+
+  if (STATE.inWorldChamps) {
+    worldTravelMap.update(deltaTime);
+    if (worldTravelMap.open) return;
+  } else {
+    travelMap.update(deltaTime);
+    if (travelMap.open) return;
+  }
+
   if (crewScreen.open) return;
   player.update(deltaTime, keys);
   updateNPCs(keys, player);
 
-  const venue = VENUES[STATE.currentVenue];
-  const raced = venue && STATE[venue.raceStateFlag];
-  if (raced && venue && !venue.isFinale &&
-      isAtMapEdge(player) && !travelMap.open) {
-    travelMap.open_map();
+  if (STATE.inWorldChamps) {
+    const wv = WORLD_VENUES[STATE.currentWorldVenue];
+    const raced = wv && STATE[wv.raceStateFlag];
+    if (raced && !wv.isWorldFinale && isAtMapEdge(player) &&
+        !worldTravelMap.open) {
+      worldTravelMap.open_map();
+    }
+  } else {
+    const venue = VENUES[STATE.currentVenue];
+    const raced = venue && STATE[venue.raceStateFlag];
+    if (raced && venue && !venue.isFinale &&
+        isAtMapEdge(player) && !travelMap.open) {
+      travelMap.open_map();
+    }
   }
 }
 
@@ -366,21 +569,51 @@ function draw() {
     return;
   }
 
-  if (STATE.currentVenue === 'london' &&
-      STATE.londonStage === 'complete') {
-    AudioManager.playTrack('ceremony');
-    drawCeremony(ctx);
+if (STATE.worldUnlocked && STATE.inWorldChamps &&
+      !STATE.racedDuisburg &&
+      STATE.londonStage !== 'worldTransitionDone' &&
+      !race.active && !race.finished) {
+    drawWorldTransition(ctx);
+    TouchControls.draw(ctx);
+    Menu.draw(ctx);
     return;
   }
 
-if (race.active || race.finished || race.showTutorial) {
+  // World ceremony
+  if (STATE.inWorldChamps &&
+      STATE.worldFinalStage === 'complete') {
+    AudioManager.playTrack('ceremony');
+    drawWorldCeremony(ctx);
+    TouchControls.draw(ctx);
+    Menu.draw(ctx);
+    return;
+  }
+
+  // National League ceremony
+  if (!STATE.inWorldChamps &&
+      STATE.londonStage === 'complete') {
+    AudioManager.playTrack('ceremony');
+    drawCeremony(ctx);
+    TouchControls.draw(ctx);
+    Menu.draw(ctx);
+    return;
+  }
+
+  if (race.active || race.finished || race.showTutorial) {
     race.draw(ctx);
     TouchControls.draw(ctx);
     return;
   }
 
-  const venue = VENUES[STATE.currentVenue];
-  const bgColour = venue ? venue.bgColour : '#1a6b9e';
+  // Background
+  let bgColour = '#1a6b9e';
+  if (STATE.inWorldChamps) {
+    const wv = WORLD_VENUES[STATE.currentWorldVenue];
+    bgColour = wv ? wv.bgColour : '#1a1a2a';
+  } else {
+    const venue = VENUES[STATE.currentVenue];
+    bgColour = venue ? venue.bgColour : '#1a6b9e';
+  }
 
   ctx.fillStyle = bgColour;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -389,134 +622,275 @@ if (race.active || race.finished || race.showTutorial) {
   player.draw(ctx);
   drawDialogue(ctx);
 
-  if (venue) {
-    const b = venue.dockBounds;
-    const onDock = player.x > b.x1 && player.x < b.x2 &&
-                   player.y > b.y1 && player.y < b.y2;
+  // Venue UI
+  if (STATE.inWorldChamps) {
+    const wv = WORLD_VENUES[STATE.currentWorldVenue];
+    if (wv) {
+      const b = wv.dockBounds;
+      const onDock = player.x > b.x1 && player.x < b.x2 &&
+                     player.y > b.y1 && player.y < b.y2;
 
-    if (venue.isFinale) {
-      const nextDist = getLondonRaceDistance();
-      const needsDebrief =
-        STATE.londonStage === 'after200' ||
-        STATE.londonStage === 'after500';
-      const complete = STATE.londonStage === 'complete' ||
-                       STATE.londonStage === 'done';
+      // Weather warning banner
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(0, 38, 480, 16);
+      ctx.fillStyle = '#ffcc44';
+      ctx.font = '7px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(wv.weatherLabel, 240, 49);
 
-      if (onDock && !complete) {
-        ctx.fillStyle = 'rgba(0,0,0,0.75)';
-        ctx.fillRect(60, 6, 360, 34);
-        ctx.strokeStyle = '#f0c040';
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(60, 6, 360, 34);
+      // World points tracker
+      ctx.fillStyle = '#4488ff';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('WC: ' + STATE.worldPoints + 'pts', 472, 36);
 
-        if (needsDebrief) {
-          ctx.fillStyle = '#f0c040';
-          ctx.font = '9px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText('Talk to Coach Tim before the next race',
-            240, 20);
-          const wins = STATE.getLondonWins();
+      if (wv.isWorldFinale) {
+        const nextDist = getWorldFinalRaceDistance();
+        const needsDebrief =
+          STATE.worldFinalStage === 'after200' ||
+          STATE.worldFinalStage === 'after500';
+        const complete =
+          STATE.worldFinalStage === 'complete' ||
+          STATE.worldFinalStage === 'done';
+
+        if (onDock && !complete) {
+          ctx.fillStyle = 'rgba(0,0,0,0.75)';
+          ctx.fillRect(60, 6, 360, 28);
+          ctx.strokeStyle = '#4488ff';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(60, 6, 360, 28);
+
+          if (needsDebrief) {
+            ctx.fillStyle = '#4488ff';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Talk to Coach Tim before the next race',
+              240, 18);
+            const wins = STATE.getWorldWins();
+            ctx.fillStyle = '#aaaaaa';
+            ctx.font = '8px monospace';
+            ctx.fillText(wins + ' final' +
+              (wins !== 1 ? 's' : '') + ' won so far', 240, 29);
+          } else if (nextDist) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('[ Space ] ' + nextDist +
+              ' World Final', 240, 18);
+            const wins = STATE.getWorldWins();
+            ctx.fillStyle = '#aaaaaa';
+            ctx.font = '8px monospace';
+            ctx.fillText(wins + ' final' +
+              (wins !== 1 ? 's' : '') + ' won  •  WC: ' +
+              STATE.worldPoints + 'pts', 240, 29);
+          }
+        }
+      } else {
+        const alreadyRaced = STATE[wv.raceStateFlag];
+        if (onDock && !alreadyRaced) {
+          ctx.fillStyle = 'rgba(0,0,0,0.75)';
+          ctx.fillRect(60, 6, 360, 34);
+          ctx.strokeStyle = '#333';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(60, 6, 360, 34);
           ctx.fillStyle = '#aaaaaa';
           ctx.font = '8px monospace';
-          ctx.fillText(wins + ' final' + (wins !== 1 ? 's' : '') +
-            ' won so far', 240, 32);
-        } else if (nextDist) {
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '9px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText('[ Space ] ' + nextDist +
-            ' final — vs Thames Valley Dragons', 240, 20);
-          const wins = STATE.getLondonWins();
+          ctx.fillText(
+            '[ Tab ] change distance    [ Space ] race',
+            240, 18);
+          distances.forEach((d, i) => {
+            const dx = 110 + i * 100;
+            const isSel = d === selectedDistance;
+            ctx.fillStyle = isSel ? '#f0c040' : '#555';
+            ctx.font = isSel ?
+              'bold 10px monospace' : '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(d, dx, 32);
+            if (isSel) {
+              ctx.fillStyle = '#f0c040';
+              ctx.fillRect(dx - 12, 34, 24, 2);
+            }
+          });
           ctx.fillStyle = '#aaaaaa';
           ctx.font = '8px monospace';
-          ctx.fillText(wins + ' final' + (wins !== 1 ? 's' : '') +
-            ' won  •  ' + STATE.trophyPoints + ' season pts', 240, 32);
+          ctx.textAlign = 'right';
+          ctx.fillText('vs ' + wv.raceRival, 410, 18);
+        }
+
+        if (onDock && alreadyRaced) {
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillRect(80, 8, 320, 20);
+          ctx.fillStyle = '#aaaaaa';
+          ctx.font = '8px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('Head right for the world travel map',
+            240, 21);
         }
       }
 
-      if (onDock && complete) {
+      const raced = STATE[wv.raceStateFlag];
+      if (raced && !wv.isWorldFinale &&
+          player.x > 380 && !worldTravelMap.open) {
         ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(80, 8, 320, 20);
-        ctx.fillStyle = '#1D9E75';
+        ctx.fillRect(100, 380, 280, 18);
+        ctx.fillStyle = '#4488ff';
         ctx.font = '8px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('Season complete. Well done Secklow.', 240, 21);
+        ctx.fillText('Keep going → for world travel map', 240, 392);
       }
+    }
 
-    } else {
-      const alreadyRaced = STATE[venue.raceStateFlag];
-      const needsTim = STATE.currentVenue === 'caldecotte' &&
-                       !STATE.metTim;
+  } else {
+    // National League venue UI
+    const venue = VENUES[STATE.currentVenue];
+    if (venue) {
+      const b = venue.dockBounds;
+      const onDock = player.x > b.x1 && player.x < b.x2 &&
+                     player.y > b.y1 && player.y < b.y2;
 
-      if (onDock && !alreadyRaced && !needsTim) {
-        ctx.fillStyle = 'rgba(0,0,0,0.75)';
-        ctx.fillRect(60, 6, 360, 34);
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(60, 6, 360, 34);
-        ctx.fillStyle = '#aaaaaa';
-        ctx.font = '8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('[ Tab ] change distance    [ Space ] race',
-          240, 18);
-        distances.forEach((d, i) => {
-          const dx = 110 + i * 100;
-          const isSel = d === selectedDistance;
-          ctx.fillStyle = isSel ? '#f0c040' : '#555';
-          ctx.font = isSel ? 'bold 10px monospace' : '10px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(d, dx, 32);
-          if (isSel) {
+      if (venue.isFinale) {
+        const nextDist = getLondonRaceDistance();
+        const needsDebrief =
+          STATE.londonStage === 'after200' ||
+          STATE.londonStage === 'after500';
+        const complete =
+          STATE.londonStage === 'complete' ||
+          STATE.londonStage === 'done';
+
+        if (onDock && !complete) {
+          ctx.fillStyle = 'rgba(0,0,0,0.75)';
+          ctx.fillRect(60, 6, 360, 34);
+          ctx.strokeStyle = '#f0c040';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(60, 6, 360, 34);
+
+          if (needsDebrief) {
             ctx.fillStyle = '#f0c040';
-            ctx.fillRect(dx - 12, 34, 24, 2);
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(
+              'Talk to Coach Tim before the next race',
+              240, 20);
+            const wins = STATE.getLondonWins();
+            ctx.fillStyle = '#aaaaaa';
+            ctx.font = '8px monospace';
+            ctx.fillText(wins + ' final' +
+              (wins !== 1 ? 's' : '') + ' won so far',
+              240, 32);
+          } else if (nextDist) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('[ Space ] ' + nextDist +
+              ' final — vs Thames Valley Dragons', 240, 20);
+            const wins = STATE.getLondonWins();
+            ctx.fillStyle = '#aaaaaa';
+            ctx.font = '8px monospace';
+            ctx.fillText(wins + ' final' +
+              (wins !== 1 ? 's' : '') + ' won  •  ' +
+              STATE.trophyPoints + ' season pts', 240, 32);
           }
-        });
-        ctx.fillStyle = '#aaaaaa';
-        ctx.font = '8px monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('vs ' + venue.raceRival, 410, 18);
-      }
+        }
 
-      if (onDock && needsTim) {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(80, 8, 320, 20);
-        ctx.fillStyle = '#f0c040';
-        ctx.font = '8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Talk to Coach Tim first', 240, 21);
-      }
+        if (onDock && complete) {
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillRect(80, 8, 320, 20);
+          ctx.fillStyle = '#1D9E75';
+          ctx.font = '8px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('Season complete. Well done Secklow.',
+            240, 21);
+        }
 
-      if (onDock && alreadyRaced) {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(80, 8, 320, 20);
-        ctx.fillStyle = '#aaaaaa';
-        ctx.font = '8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('Head right for the travel map', 240, 21);
+      } else {
+        const alreadyRaced = STATE[venue.raceStateFlag];
+        const needsTim = STATE.currentVenue === 'caldecotte' &&
+                         !STATE.metTim;
+
+        if (onDock && !alreadyRaced && !needsTim) {
+          ctx.fillStyle = 'rgba(0,0,0,0.75)';
+          ctx.fillRect(60, 6, 360, 34);
+          ctx.strokeStyle = '#333';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(60, 6, 360, 34);
+          ctx.fillStyle = '#aaaaaa';
+          ctx.font = '8px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            '[ Tab ] change distance    [ Space ] race',
+            240, 18);
+          distances.forEach((d, i) => {
+            const dx = 110 + i * 100;
+            const isSel = d === selectedDistance;
+            ctx.fillStyle = isSel ? '#f0c040' : '#555';
+            ctx.font = isSel ?
+              'bold 10px monospace' : '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(d, dx, 32);
+            if (isSel) {
+              ctx.fillStyle = '#f0c040';
+              ctx.fillRect(dx - 12, 34, 24, 2);
+            }
+          });
+          ctx.fillStyle = '#aaaaaa';
+          ctx.font = '8px monospace';
+          ctx.textAlign = 'right';
+          ctx.fillText('vs ' + venue.raceRival, 410, 18);
+        }
+
+        if (onDock && needsTim) {
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillRect(80, 8, 320, 20);
+          ctx.fillStyle = '#f0c040';
+          ctx.font = '8px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('Talk to Coach Tim first', 240, 21);
+        }
+
+        if (onDock && alreadyRaced) {
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillRect(80, 8, 320, 20);
+          ctx.fillStyle = '#aaaaaa';
+          ctx.font = '8px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('Head right for the travel map', 240, 21);
+        }
       }
+    }
+
+const venueEdge = VENUES[STATE.currentVenue];
+    const racedEdge = venueEdge && STATE[venueEdge.raceStateFlag];
+    if (racedEdge && venueEdge && !venueEdge.isFinale &&
+        player.x > 380 && !travelMap.open) {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(100, 380, 280, 18);
+      ctx.fillStyle = '#f0c040';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Keep going → for travel map', 240, 392);
     }
   }
 
-  const raced = venue && STATE[venue.raceStateFlag];
-  if (raced && venue && !venue.isFinale &&
-      player.x > 380 && !travelMap.open) {
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(100, 380, 280, 18);
-    ctx.fillStyle = '#f0c040';
-    ctx.font = '8px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('Keep going → for travel map', 240, 392);
+  crewScreen.draw(ctx);
+  if (STATE.inWorldChamps) {
+    worldTravelMap.draw(ctx);
+  } else {
+    travelMap.draw(ctx);
   }
 
-  crewScreen.draw(ctx);
-  travelMap.draw(ctx);
-
-  if (!crewScreen.open && !travelMap.open) {
+  if (!crewScreen.open && !travelMap.open &&
+      !worldTravelMap.open) {
     ctx.font = '8px monospace';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#333';
     ctx.fillText('[ C ] crew', 8, 424);
-    if (raced && venue && !venue.isFinale) {
+    let venue = STATE.inWorldChamps ?
+      WORLD_VENUES[STATE.currentWorldVenue] :
+      VENUES[STATE.currentVenue];
+    let raced = venue && STATE[venue.raceStateFlag];
+    if (raced && venue && !venue.isFinale &&
+        !venue.isWorldFinale) {
       ctx.textAlign = 'center';
       ctx.fillStyle = '#333';
       ctx.fillText('[ M ] map', 240, 424);
@@ -525,6 +899,7 @@ if (race.active || race.finished || race.showTutorial) {
     ctx.fillStyle = '#222';
     ctx.fillText('[ ` ] mute', 472, 424);
   }
+
   TouchControls.draw(ctx);
   Menu.draw(ctx);
   LeagueTable.draw(ctx);

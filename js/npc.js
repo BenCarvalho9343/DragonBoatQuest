@@ -151,6 +151,12 @@ const NPC_APPEARANCES = {
     eyeColour:     '#3a3a3a',
     hasBeard:      true,
   },
+  'Fire Captain':   { skinColour:'#ffe4c4', hairColour:'#ff4400', hairStyle:'spiky', kitColour:'#ff4400', kitSecondary:'#ffffff', eyeColour:'#cc2200' },
+  'World Official': { skinColour:'#f4c07a', hairColour:'#1a1a1a', hairStyle:'short', kitColour:'#4488ff', kitSecondary:'#f0c040', eyeColour:'#4488ff' },
+  'CGCSA Captain':  { skinColour:'#c68642', hairColour:'#1a1a1a', hairStyle:'short', kitColour:'#cc0000', kitSecondary:'#ffff00', eyeColour:'#1a1a1a' },
+  'Local Guide':    { skinColour:'#c68642', hairColour:'#1a1a1a', hairStyle:'long',  kitColour:'#ffaa00', kitSecondary:'#cc0000', eyeColour:'#3a2a1a' },
+  'Viking Captain': { skinColour:'#ffe4c4', hairColour:'#ffcc00', hairStyle:'long',  kitColour:'#4488ff', kitSecondary:'#ffffff', eyeColour:'#4488ff', hasBeard:true },
+  'IDBF Official':  { skinColour:'#f4c07a', hairColour:'#aaaaaa', hairStyle:'bald',  kitColour:'#1a1a4a', kitSecondary:'#f0c040', eyeColour:'#3a3a3a', hasBeard:true },
 };
 
 const DEFAULT_APPEARANCE = {
@@ -161,6 +167,10 @@ const DEFAULT_APPEARANCE = {
 };
 
 function getVenueNPCs() {
+  if (STATE.inWorldChamps) {
+    const venue = WORLD_VENUES[STATE.currentWorldVenue];
+    return venue ? venue.npcs : WORLD_VENUES.duisburg.npcs;
+  }
   const venue = VENUES[STATE.currentVenue];
   return venue ? venue.npcs : VENUES.caldecotte.npcs;
 }
@@ -186,14 +196,25 @@ function updateNPCs(keys, player) {
       activeLineIndex++;
       if (activeLineIndex >= npc.lines.length) {
         if (npc.name === 'Coach Tim') {
+          // Caldecotte first meeting
           if (STATE.currentVenue === 'caldecotte') {
             STATE.metTim = true;
           }
+          // London finale debriefs
           if (STATE.currentVenue === 'london') {
             if (STATE.londonStage === 'after200') {
               STATE.londonStage = '200debriefed';
             } else if (STATE.londonStage === 'after500') {
               STATE.londonStage = '500debriefed';
+            }
+          }
+          // World final debriefs
+          if (STATE.inWorldChamps &&
+              STATE.currentWorldVenue === 'racice') {
+            if (STATE.worldFinalStage === 'after200') {
+              STATE.worldFinalStage = '200debriefed';
+            } else if (STATE.worldFinalStage === 'after500') {
+              STATE.worldFinalStage = '500debriefed';
             }
           }
           STATE.save();

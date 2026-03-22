@@ -17,9 +17,19 @@ const COLOURS = {
   13: '#1a0a0a',
   14: '#0a0a1a',
   15: '#1a1a2a',
+  16: '#2a2a3a',
+  17: '#3a3a4a',
+  18: '#3a1a00',
+  19: '#2a1000',
+  20: '#0a0a2a',
+  21: '#1a1a3a',
 };
 
 function getMapData() {
+  if (STATE.inWorldChamps) {
+    const venue = WORLD_VENUES[STATE.currentWorldVenue];
+    return venue ? venue.mapData : WORLD_VENUES.duisburg.mapData;
+  }
   const venue = VENUES[STATE.currentVenue];
   return venue ? venue.mapData : VENUES.caldecotte.mapData;
 }
@@ -42,10 +52,12 @@ function drawMap(ctx) {
   MAP_DATA.forEach((row, r) => {
     row.forEach((tile, c) => {
       ctx.fillStyle = COLOURS[tile] || '#000';
-      ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE,
+        TILE_SIZE, TILE_SIZE);
       ctx.strokeStyle = 'rgba(0,0,0,0.15)';
       ctx.lineWidth = 0.5;
-      ctx.strokeRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      ctx.strokeRect(c * TILE_SIZE, r * TILE_SIZE,
+        TILE_SIZE, TILE_SIZE);
     });
   });
 }
