@@ -500,7 +500,6 @@ const VENUES = {
         x: 80, y: 112,
         colour: '#4a90d9',
         get lines() {
-          // Pre any racing
           if (!STATE.londonStage) {
             return [
               "Royal Albert Dock. We made it.",
@@ -510,7 +509,6 @@ const VENUES = {
               "Race the 200m first. Get to the dock.",
             ];
           }
-          // After 200m
           if (STATE.londonStage === 'after200') {
             const r = STATE.london200Result;
             const wins = STATE.getLondonWins();
@@ -528,7 +526,6 @@ const VENUES = {
               "The 500m is our distance. Get back out there.",
             ];
           }
-          // After 500m
           if (STATE.londonStage === 'after500') {
             const wins = STATE.getLondonWins();
             if (wins === 2) {
@@ -555,7 +552,6 @@ const VENUES = {
               "That's all we can do now.",
             ];
           }
-          // Complete
           if (STATE.londonStage === 'complete') {
             const ending = STATE.getLondonEnding();
             if (ending === 'champion') {

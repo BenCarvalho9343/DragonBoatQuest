@@ -180,6 +180,7 @@ const race = {
       this.synergyGauge = 0;
       this.gradeText = 'SYNERGY!';
       this.gradeTimer = 1.0;
+      AudioManager.playSFX('synergy');
     }
 
     if (this.distance >= this.maxDistance) {
@@ -257,6 +258,7 @@ const race = {
       this.boatSpeed = Math.max(10, this.boatSpeed - 2);
       this.perfectStreak = 0;
       this.synergyGauge = Math.max(0, this.synergyGauge - 5);
+      AudioManager.playSFX('miss');
       return;
     }
 
@@ -268,11 +270,13 @@ const race = {
       this.boatSpeed = Math.min(this.maxBoatSpeed, this.boatSpeed + 4);
       this.perfectStreak++;
       this.synergyGauge = Math.min(100, this.synergyGauge + 15);
+      AudioManager.playSFX('perfect');
     } else if (dist < 20) {
       this.gradeText = 'GREAT';
       this.boatSpeed = Math.min(this.maxBoatSpeed, this.boatSpeed + 2);
       this.perfectStreak++;
       this.synergyGauge = Math.min(100, this.synergyGauge + 8);
+      AudioManager.playSFX('great');
     } else {
       this.gradeText = 'OK';
       this.boatSpeed = Math.min(this.maxBoatSpeed, this.boatSpeed + 1);
@@ -377,14 +381,12 @@ const race = {
     const rivalName = venue ? venue.raceRival : 'Rival';
     const isFinale = venue && venue.isFinale;
 
-    // Background
     ctx.fillStyle = '#1a5a8a';
     ctx.fillRect(0, 0, 480, 432);
     ctx.fillStyle = '#3a7d2c';
     ctx.fillRect(0, 0, 480, 40);
     ctx.fillRect(0, 320, 480, 112);
 
-    // Lane lines
     ctx.strokeStyle = 'rgba(255,255,255,0.1)';
     ctx.lineWidth = 1;
     for (let i = 1; i < 4; i++) {
@@ -397,7 +399,6 @@ const race = {
     ctx.setLineDash([]);
 
     if (isFinale) {
-      // All six rivals in their own lanes
       const rivals = this.getRivalSpeeds();
       rivals.forEach((rival, i) => {
         const laneY = 48 + i * 38;
@@ -423,7 +424,6 @@ const race = {
         ctx.fillText(rival.name, Math.min(rx, 390), laneY + 4);
       });
 
-      // Secklow at the bottom
       const seckY = 285;
       ctx.fillStyle = '#8B1A1A';
       ctx.fillRect(this.boatX, seckY + 6, 52, 8);
@@ -450,7 +450,6 @@ const race = {
       ctx.fillText('SECKLOW', Math.min(this.boatX, 390), seckY - 1);
 
     } else {
-      // Single rival boat
       const singleSpeed = this.getSingleRivalSpeed();
       const singleRivalX = 20 + (this.distance * singleSpeed /
         this.maxDistance) * 400;
@@ -504,7 +503,6 @@ const race = {
         Math.min(singleRivalX, 400), 188);
     }
 
-    // Finish line
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.setLineDash([]);
@@ -517,7 +515,6 @@ const race = {
     ctx.textAlign = 'center';
     ctx.fillText('FINISH', 420, 36);
 
-    // Distance bar
     const distPct = Math.min(this.distance / this.maxDistance, 1);
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(20, 330, 440, 8);
@@ -539,7 +536,6 @@ const race = {
     ctx.textAlign = 'right';
     ctx.fillText(Math.floor(this.distance) + 'm', 460, 348);
 
-    // Synergy gauge
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(20, 354, 200, 6);
     ctx.fillStyle = '#f0c040';
@@ -549,7 +545,6 @@ const race = {
     ctx.textAlign = 'left';
     ctx.fillText('SYNERGY', 228, 361);
 
-    // Rhythm lane
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(0, 370, 480, 32);
     ctx.strokeStyle = '#ffffff';
@@ -615,8 +610,7 @@ const race = {
         ctx.fillStyle = posColour;
         ctx.font = 'bold 18px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(posLabels[this.finishPosition] + ' PLACE',
-          240, 165);
+        ctx.fillText(posLabels[this.finishPosition] + ' PLACE', 240, 165);
         ctx.fillStyle = '#ffffff';
         ctx.font = '10px monospace';
         ctx.fillText('Secklow finish ' +

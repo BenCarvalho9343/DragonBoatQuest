@@ -108,7 +108,7 @@ const travelMap = {
       player.y = 80;
       activeNPCIndex = null;
       activeLineIndex = 0;
-    }
+AudioManager.playTrack(AudioManager.getTrackForVenue(this.destinationId));    }
   },
 
   handleKey(key) {

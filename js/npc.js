@@ -46,10 +46,11 @@ function updateNPCs(keys, player) {
       activeNPCIndex = i;
       activeLineIndex = 0;
       npc.justPressed = true;
+      AudioManager.playSFX('dialogue');
     } else if (keys[' '] && activeNPCIndex === i &&
                !npc.justPressed) {
       activeLineIndex++;
-if (activeLineIndex >= npc.lines.length) {
+      if (activeLineIndex >= npc.lines.length) {
         if (npc.name === 'Coach Tim') {
           if (STATE.currentVenue === 'caldecotte') {
             STATE.metTim = true;

@@ -2,6 +2,9 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
+AudioManager.init();
+
+let gameStarted = false;
 const keys = {};
 let selectedDistance = '500m';
 const distances = ['200m', '500m', '2000m'];
@@ -13,6 +16,65 @@ function getLondonRaceDistance() {
   return null;
 }
 
+function drawStartScreen() {
+  ctx.fillStyle = '#050510';
+  ctx.fillRect(0, 0, 480, 432);
+
+  for (let i = 0; i < 40; i++) {
+    ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + (i % 5) * 0.14) + ')';
+    ctx.fillRect((i * 73) % 460 + 10, (i * 47) % 200 + 10, 1, 1);
+  }
+
+  ctx.fillStyle = '#8B1A1A';
+  ctx.fillRect(180, 140, 120, 16);
+  ctx.fillStyle = '#6B0A0A';
+  ctx.fillRect(298, 142, 6, 12);
+  ctx.fillRect(176, 142, 6, 12);
+  for (let p = 0; p < 6; p++) {
+    const px = 188 + p * 17;
+    ctx.fillStyle = '#8B1A1A';
+    ctx.fillRect(px, 130, 4, 10);
+    ctx.fillStyle = '#f4c07a';
+    ctx.fillRect(px + 1, 127, 3, 4);
+  }
+  ctx.fillStyle = '#f0c040';
+  ctx.fillRect(183, 131, 5, 5);
+
+  ctx.fillStyle = '#f0c040';
+  ctx.font = 'bold 18px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('DRAGON BOAT QUEST', 240, 220);
+
+  ctx.fillStyle = '#aaaaaa';
+  ctx.font = '10px monospace';
+  ctx.fillText('Secklow Hundred — National League', 240, 240);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 11px monospace';
+  ctx.fillText('Click or tap to start', 240, 290);
+
+  ctx.fillStyle = '#444';
+  ctx.font = '8px monospace';
+  ctx.fillText('Arrow keys to move  •  Space to interact', 240, 316);
+  ctx.fillText('C = crew  •  M = map  •  ` = mute', 240, 330);
+}
+
+function startGame() {
+  if (gameStarted) return;
+  gameStarted = true;
+  AudioManager.unlocked = true;
+  AudioManager.playTrack(
+    AudioManager.getTrackForVenue(STATE.currentVenue)
+  );
+  requestAnimationFrame(gameLoop);
+}
+
+canvas.addEventListener('click', startGame);
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  startGame();
+}, { passive: false });
+
 function drawCeremony(ctx) {
   const ending = STATE.getLondonEnding();
   const wins = STATE.getLondonWins();
@@ -20,43 +82,35 @@ function drawCeremony(ctx) {
   ctx.fillStyle = '#050510';
   ctx.fillRect(0, 0, 480, 432);
 
-  // Stars
   for (let i = 0; i < 40; i++) {
-    ctx.fillStyle = 'rgba(255,255,255,' +
-      (0.3 + (i % 5) * 0.14) + ')';
-    ctx.fillRect((i * 73) % 460 + 10,
-      (i * 47) % 200 + 10, 1, 1);
+    ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + (i % 5) * 0.14) + ')';
+    ctx.fillRect((i * 73) % 460 + 10, (i * 47) % 200 + 10, 1, 1);
   }
 
-  // Dock reflection
   ctx.fillStyle = '#0a1a3a';
   ctx.fillRect(0, 200, 480, 120);
 
-  // Trophy or ribbon
   if (ending === 'champion') {
-    // Gold trophy
     ctx.fillStyle = '#f0c040';
     ctx.fillRect(210, 130, 60, 50);
     ctx.fillRect(200, 175, 80, 10);
     ctx.fillRect(220, 185, 40, 15);
     ctx.fillRect(205, 200, 70, 8);
-    // Trophy handles
     ctx.fillStyle = '#c0a030';
     ctx.fillRect(195, 140, 15, 30);
     ctx.fillRect(270, 140, 15, 30);
-    // Shine
     ctx.fillStyle = '#fff8aa';
     ctx.fillRect(218, 138, 8, 20);
   } else if (ending === 'runnersup') {
-    // Silver medal
     ctx.fillStyle = '#c0c0c0';
     ctx.fillRect(215, 145, 50, 50);
     ctx.fillStyle = '#a0a0a0';
     ctx.fillRect(220, 150, 40, 40);
     ctx.fillStyle = '#ffffff';
-    ctx.fillText('2', 238, 175);
+    ctx.font = '14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('2', 240, 178);
   } else {
-    // Spirit ribbon
     ctx.fillStyle = '#cc2222';
     ctx.fillRect(210, 150, 60, 10);
     ctx.fillStyle = '#2222cc';
@@ -65,7 +119,6 @@ function drawCeremony(ctx) {
     ctx.fillRect(210, 176, 60, 10);
   }
 
-  // Ceremony text
   ctx.fillStyle = '#f0c040';
   ctx.font = 'bold 14px monospace';
   ctx.textAlign = 'center';
@@ -84,23 +137,18 @@ function drawCeremony(ctx) {
   ctx.fillText(wins + '/3 finals won  •  ' +
     STATE.trophyPoints + ' season points', 240, 273);
 
-  // Result breakdown
   const r200 = STATE.london200Result === 'win' ? 'WIN' : 'LOSS';
   const r500 = STATE.london500Result === 'win' ? 'WIN' : 'LOSS';
   const r2k  = STATE.london2000Result === 'win' ? 'WIN' : 'LOSS';
 
   ctx.font = '9px monospace';
-  ctx.fillStyle = STATE.london200Result === 'win' ?
-    '#1D9E75' : '#cc3333';
+  ctx.fillStyle = STATE.london200Result === 'win' ? '#1D9E75' : '#cc3333';
   ctx.fillText('200m: ' + r200, 240, 295);
-  ctx.fillStyle = STATE.london500Result === 'win' ?
-    '#1D9E75' : '#cc3333';
+  ctx.fillStyle = STATE.london500Result === 'win' ? '#1D9E75' : '#cc3333';
   ctx.fillText('500m: ' + r500, 240, 308);
-  ctx.fillStyle = STATE.london2000Result === 'win' ?
-    '#1D9E75' : '#cc3333';
+  ctx.fillStyle = STATE.london2000Result === 'win' ? '#1D9E75' : '#cc3333';
   ctx.fillText('2000m: ' + r2k, 240, 321);
 
-  // Tim's words
   ctx.fillStyle = '#aaaaaa';
   ctx.font = '8px monospace';
   if (ending === 'champion') {
@@ -115,7 +163,6 @@ function drawCeremony(ctx) {
   ctx.font = '8px monospace';
   ctx.fillText('[ Space ] return to the dock', 240, 380);
 
-  // Floodlights
   for (let i = 0; i < 6; i++) {
     ctx.fillStyle = 'rgba(255,255,200,0.06)';
     ctx.fillRect(i * 80, 0, 40, 432);
@@ -123,8 +170,14 @@ function drawCeremony(ctx) {
 }
 
 window.addEventListener('keydown', e => {
+  if (!gameStarted) { startGame(); return; }
   keys[e.key] = true;
   e.preventDefault();
+
+  if (e.key === '`') {
+    AudioManager.toggleMute();
+    return;
+  }
 
   if (e.key === 'z' || e.key === 'Z') {
     if (race.active && race.distanceMode === '2000m') {
@@ -184,7 +237,6 @@ window.addEventListener('keydown', e => {
   }
 
   if (e.key === ' ') {
-    // Ceremony dismiss
     if (STATE.currentVenue === 'london' &&
         STATE.londonStage === 'complete' &&
         !race.active && !race.finished) {
@@ -195,7 +247,14 @@ window.addEventListener('keydown', e => {
 
     if (race.showTutorial) { race.tap(); return; }
     if (race.active) { race.tap(); return; }
-    if (race.finished) { race.finished = false; return; }
+
+    if (race.finished) {
+      race.finished = false;
+      AudioManager.playTrack(
+        AudioManager.getTrackForVenue(STATE.currentVenue)
+      );
+      return;
+    }
 
     if (!isDialogueActive()) {
       const venue = VENUES[STATE.currentVenue];
@@ -206,18 +265,17 @@ window.addEventListener('keydown', e => {
                      player.y > b.y1 && player.y < b.y2;
 
       if (venue.isFinale) {
-        // London finale dock logic
         const nextDist = getLondonRaceDistance();
         const needsDebrief =
-          (STATE.londonStage === 'after200' ||
-           STATE.londonStage === 'after500');
+          STATE.londonStage === 'after200' ||
+          STATE.londonStage === 'after500';
 
         if (onDock && nextDist && !needsDebrief) {
           race.start(nextDist);
+          AudioManager.playTrack('race');
           return;
         }
         if (onDock && needsDebrief) {
-          // Nudge player to Tim
           activeNPCIndex = 0;
           activeLineIndex = 0;
           return;
@@ -225,13 +283,13 @@ window.addEventListener('keydown', e => {
         return;
       }
 
-      // Normal venue dock logic
       const alreadyRaced = STATE[venue.raceStateFlag];
       const needsTim = STATE.currentVenue === 'caldecotte' &&
                        !STATE.metTim;
 
       if (onDock && !alreadyRaced && !needsTim) {
         race.start(selectedDistance);
+        AudioManager.playTrack('race');
         return;
       }
       if (onDock && needsTim) {
@@ -245,9 +303,8 @@ window.addEventListener('keydown', e => {
 
 window.addEventListener('keyup', e => { keys[e.key] = false; });
 
-
-
 function update(deltaTime, timestamp) {
+  if (!gameStarted) return;
   if (race.active) {
     race.update(deltaTime, timestamp);
     return;
@@ -260,16 +317,21 @@ function update(deltaTime, timestamp) {
 
   const venue = VENUES[STATE.currentVenue];
   const raced = venue && STATE[venue.raceStateFlag];
-  if (raced && !venue.isFinale && isAtMapEdge(player) &&
-      !travelMap.open) {
+  if (raced && venue && !venue.isFinale &&
+      isAtMapEdge(player) && !travelMap.open) {
     travelMap.open_map();
   }
 }
 
 function draw() {
-  // London ceremony screen
+  if (!gameStarted) {
+    drawStartScreen();
+    return;
+  }
+
   if (STATE.currentVenue === 'london' &&
       STATE.londonStage === 'complete') {
+    AudioManager.playTrack('ceremony');
     drawCeremony(ctx);
     return;
   }
@@ -295,11 +357,10 @@ function draw() {
                    player.y > b.y1 && player.y < b.y2;
 
     if (venue.isFinale) {
-      // London dock prompts
       const nextDist = getLondonRaceDistance();
       const needsDebrief =
-        (STATE.londonStage === 'after200' ||
-         STATE.londonStage === 'after500');
+        STATE.londonStage === 'after200' ||
+        STATE.londonStage === 'after500';
       const complete = STATE.londonStage === 'complete' ||
                        STATE.londonStage === 'done';
 
@@ -314,7 +375,8 @@ function draw() {
           ctx.fillStyle = '#f0c040';
           ctx.font = '9px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText('Talk to Coach Tim before the next race', 240, 20);
+          ctx.fillText('Talk to Coach Tim before the next race',
+            240, 20);
           const wins = STATE.getLondonWins();
           ctx.fillStyle = '#aaaaaa';
           ctx.font = '8px monospace';
@@ -344,7 +406,6 @@ function draw() {
       }
 
     } else {
-      // Normal venue dock prompts
       const alreadyRaced = STATE[venue.raceStateFlag];
       const needsTim = STATE.currentVenue === 'caldecotte' &&
                        !STATE.metTim;
@@ -358,7 +419,8 @@ function draw() {
         ctx.fillStyle = '#aaaaaa';
         ctx.font = '8px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('[ Tab ] change distance    [ Space ] race', 240, 18);
+        ctx.fillText('[ Tab ] change distance    [ Space ] race',
+          240, 18);
         distances.forEach((d, i) => {
           const dx = 110 + i * 100;
           const isSel = d === selectedDistance;
@@ -397,7 +459,6 @@ function draw() {
     }
   }
 
-  // Edge prompt for non-finale venues
   const raced = venue && STATE[venue.raceStateFlag];
   if (raced && venue && !venue.isFinale &&
       player.x > 380 && !travelMap.open) {
@@ -413,14 +474,18 @@ function draw() {
   travelMap.draw(ctx);
 
   if (!crewScreen.open && !travelMap.open) {
-    ctx.fillStyle = '#333';
     ctx.font = '8px monospace';
     ctx.textAlign = 'left';
+    ctx.fillStyle = '#333';
     ctx.fillText('[ C ] crew', 8, 424);
     if (raced && venue && !venue.isFinale) {
-      ctx.textAlign = 'right';
-      ctx.fillText('[ M ] map', 472, 424);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#333';
+      ctx.fillText('[ M ] map', 240, 424);
     }
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#222';
+    ctx.fillText('[ ` ] mute', 472, 424);
   }
 }
 
@@ -434,4 +499,9 @@ function gameLoop(timestamp) {
 }
 
 console.log('Dragon Boat Quest loaded!');
-requestAnimationFrame(gameLoop);
+requestAnimationFrame(function startLoop() {
+  if (!gameStarted) {
+    drawStartScreen();
+    requestAnimationFrame(startLoop);
+  }
+});
