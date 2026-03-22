@@ -340,6 +340,7 @@ if (wv.isWorldFinale) {
               AudioManager.playTrack('race');
               return;
             }
+            // Fall through to NPC interaction when debrief needed
           } else {
             const alreadyRaced = STATE[wv.raceStateFlag];
             if (onDock && !alreadyRaced) {
@@ -349,12 +350,39 @@ if (wv.isWorldFinale) {
             }
           }
 
-          // NPC interaction for world venues
+if (STATE.inWorldChamps) {
+          const wv = WORLD_VENUES[STATE.currentWorldVenue];
+          if (!wv) return;
+          const b = wv.dockBounds;
+          const onDock = player.x > b.x1 && player.x < b.x2 &&
+                         player.y > b.y1 && player.y < b.y2;
+
+          if (wv.isWorldFinale) {
+            const nextDist = getWorldFinalRaceDistance();
+            const needsDebrief =
+              STATE.worldFinalStage === 'after200' ||
+              STATE.worldFinalStage === 'after500';
+            if (onDock && nextDist && !needsDebrief) {
+              race.start(nextDist);
+              AudioManager.playTrack('race');
+              return;
+            }
+          } else {
+            const alreadyRaced = STATE[wv.raceStateFlag];
+            if (onDock && !alreadyRaced) {
+              race.start(selectedDistance);
+              AudioManager.playTrack('race');
+              return;
+            }
+          }
+
+          // NPC interaction always runs if no race started
           const savedKey = keys[' '];
           keys[' '] = true;
           updateNPCs(keys, player);
           keys[' '] = savedKey;
           return;
+        }
         }
 
         // National League venues
