@@ -392,7 +392,7 @@ if (STATE.inWorldChamps) {
         const onDock = player.x > b.x1 && player.x < b.x2 &&
                        player.y > b.y1 && player.y < b.y2;
 
-        if (venue.isFinale) {
+if (venue.isFinale) {
           const nextDist = getLondonRaceDistance();
           const needsDebrief =
             STATE.londonStage === 'after200' ||
@@ -402,27 +402,26 @@ if (STATE.inWorldChamps) {
             AudioManager.playTrack('race');
             return;
           }
-if (onDock && needsDebrief) {
-            // Let NPC proximity handle Tim
+          // Debrief needed or no more races — fall through to NPC interaction below
+        } else {
+          const alreadyRaced = STATE[venue.raceStateFlag];
+          const needsTim = STATE.currentVenue === 'caldecotte' &&
+                           !STATE.metTim;
+          if (onDock && !alreadyRaced && !needsTim) {
+            race.start(selectedDistance);
+            AudioManager.playTrack('race');
+            return;
           }
-          return;
-        }
-
-        const alreadyRaced = STATE[venue.raceStateFlag];
-        const needsTim = STATE.currentVenue === 'caldecotte' &&
-                         !STATE.metTim;
-        if (onDock && !alreadyRaced && !needsTim) {
-          race.start(selectedDistance);
-          AudioManager.playTrack('race');
-          return;
-        }
-        if (onDock && needsTim) {
-          activeNPCIndex = 0;
-          activeLineIndex = 0;
-          return;
+          if (onDock && needsTim) {
+            activeNPCIndex = 0;
+            activeLineIndex = 0;
+            return;
+          }
         }
 
         const savedKey = keys[' '];
+        keys[' '] = false;
+        updateNPCs(keys, player);
         keys[' '] = true;
         updateNPCs(keys, player);
         keys[' '] = savedKey;
