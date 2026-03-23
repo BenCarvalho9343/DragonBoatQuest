@@ -30,6 +30,10 @@ function getWorldFinalRaceDistance() {
 function drawStartScreen() {
   ctx.fillStyle = '#050510';
   ctx.fillRect(0, 0, 480, 432);
+  ctx.fillStyle = '#333';
+  ctx.font = '7px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('v' + GAME_VERSION, 472, 424);
 
   for (let i = 0; i < 40; i++) {
     ctx.fillStyle = 'rgba(255,255,255,' +
