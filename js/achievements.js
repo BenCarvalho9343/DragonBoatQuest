@@ -241,12 +241,12 @@ const Achievements = {
     }
     if (this.totalDistance >= 10000) this.unlock('distance_10000');
     const allNPCs = [
-      'Coach Tim', 'Soaring Captain', 'River Marshal', 'Ada',
-      'Anaconda Captain', 'Trent Marshal', 'Supporter',
+      'Coach Tim', 'Soaring Captain', 'Ada',
+      'Anaconda Captain', 'holly', 'Supporter',
       'St Neots Captain', 'Festival MC', 'Local Fan',
       'Powerhouse Captain', 'Tees Marshal', 'Steel Worker',
       'Amathus Captain', 'Dock Marshal', 'Mersey Local',
-      'Thames Captain', 'BDA Official', 'Fire Captain',
+      'Thames Captain', 'Dave Bangs', 'Fire Captain',
       'World Official', 'CGCSA Captain', 'Local Guide',
       'Viking Captain', 'IDBF Official',
     ];
