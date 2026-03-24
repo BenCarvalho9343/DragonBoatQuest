@@ -29,6 +29,7 @@ const race = {
   weather: null,
   weatherTimer: 0,
   windOffset: 0,
+  freeplayMode: false,
 
   getRivalSpeeds() {
     const m = this.distanceMode;
@@ -36,15 +37,14 @@ const race = {
 
     if (isWorld && STATE.currentWorldVenue === 'racice') {
       return [
-        { name:'Fire',    colour:'#ff4400', s200:0.97, s500:0.95, s2000:0.92 },
-        { name:'Viking',  colour:'#4488ff', s200:0.95, s500:0.96, s2000:0.94 },
-        { name:'CGCSA',   colour:'#cc0000', s200:0.98, s500:0.97, s2000:0.96 },
-        { name:'Paddle',  colour:'#00aa44', s200:0.94, s500:0.95, s2000:0.93 },
-        { name:'Golden',  colour:'#ffcc00', s200:0.96, s500:0.94, s2000:0.95 },
+        { name:'Fire',   colour:'#ff4400', s200:0.97, s500:0.95, s2000:0.92 },
+        { name:'Viking', colour:'#4488ff', s200:0.95, s500:0.96, s2000:0.94 },
+        { name:'CGCSA',  colour:'#cc0000', s200:0.98, s500:0.97, s2000:0.96 },
+        { name:'Paddle', colour:'#00aa44', s200:0.94, s500:0.95, s2000:0.93 },
+        { name:'Golden', colour:'#ffcc00', s200:0.96, s500:0.94, s2000:0.95 },
       ].map(r => ({
         ...r,
-        speed: m === '200m' ? r.s200
-          : m === '2000m' ? r.s2000 : r.s500,
+        speed: m === '200m' ? r.s200 : m === '2000m' ? r.s2000 : r.s500,
       }));
     }
 
@@ -57,8 +57,7 @@ const race = {
       { name:'Thames Val', colour:'#1D9E75', s200:0.91, s500:0.89, s2000:0.87 },
     ].map(r => ({
       ...r,
-      speed: m === '200m' ? r.s200
-        : m === '2000m' ? r.s2000 : r.s500,
+      speed: m === '200m' ? r.s200 : m === '2000m' ? r.s2000 : r.s500,
     }));
   },
 
@@ -102,14 +101,15 @@ const race = {
     this.weather = this.getWeather();
     this.weatherTimer = 0;
     this.windOffset = 0;
+    this.freeplayMode = false;
 
-    // Set up bends
+    Achievements.trackRaceStart();
+
     const isWorldFinal = STATE.inWorldChamps &&
       STATE.currentWorldVenue === 'racice';
 
     if (mode === '2000m') {
       if (isWorldFinal) {
-        // Four bends for world final
         this.bends = [
           { at: 400,  triggered: false, complete: false },
           { at: 800,  triggered: false, complete: false },
@@ -130,7 +130,6 @@ const race = {
       this.bpm = 100;
     }
 
-    // Crosswind makes hit window tighter — we handle this in tap()
     if (this.weather === 'crosswind') {
       this.bendWindowDuration = 1.0;
     } else {
@@ -158,16 +157,19 @@ const race = {
     if (ratio < 0.15) {
       this.bendGradeText = 'PERFECT LINE';
       this.bendGradeTimer = 1.0;
+      Achievements.trackBend('PERFECT LINE');
     } else if (ratio < 0.35) {
       this.bendGradeText = 'GOOD LINE';
       this.boatSpeed = Math.max(10, this.boatSpeed - 2);
       this.totalBendPenalty += 2;
       this.bendGradeTimer = 1.0;
+      Achievements.trackBend('GOOD LINE');
     } else {
       this.bendGradeText = 'WIDE LINE';
       this.boatSpeed = Math.max(10, this.boatSpeed - 5);
       this.totalBendPenalty += 5;
       this.bendGradeTimer = 1.0;
+      Achievements.trackBend('WIDE LINE');
     }
     this.bendActive = false;
   },
@@ -175,7 +177,6 @@ const race = {
   update(deltaTime, timestamp) {
     if (!this.active || this.finished) return;
 
-    // Weather timer for wind effect
     this.weatherTimer += deltaTime;
     if (this.weather === 'crosswind') {
       this.windOffset = Math.sin(this.weatherTimer * 1.5) * 8;
@@ -192,7 +193,6 @@ const race = {
     this.beats.forEach(b => {
       if (!b.hit && b.x < 44) {
         b.missed = true;
-        // Choppy water — misses hurt more
         const missPenalty = this.weather === 'choppy' ? 3 : 2;
         this.boatSpeed = Math.max(10, this.boatSpeed - missPenalty);
         this.perfectStreak = 0;
@@ -205,10 +205,8 @@ const race = {
     this.distance += this.boatSpeed * deltaTime;
     this.boatX = 20 + (this.distance / this.maxDistance) * 400;
 
-    // Rival moves independently
     const rivalBaseSpeed = this.distanceMode === '200m' ? 28
       : this.distanceMode === '2000m' ? 22 : 25;
-    // Choppy water makes rivals faster too
     const weatherBonus = this.weather === 'choppy' ? 2 : 0;
     this.rivalDistance += (rivalBaseSpeed + weatherBonus) * deltaTime;
 
@@ -227,15 +225,14 @@ const race = {
 
       if (this.bendActive) {
         this.bendTimer += deltaTime;
-        this.bendProgress =
-          this.bendTimer / this.bendWindowDuration;
+        this.bendProgress = this.bendTimer / this.bendWindowDuration;
         if (this.bendTimer >= this.bendWindowDuration) {
-          if (this.bendGradeText === '' ||
-              this.bendGradeTimer <= 0) {
+          if (this.bendGradeText === '' || this.bendGradeTimer <= 0) {
             this.bendGradeText = 'MISSED BEND!';
             this.bendGradeTimer = 1.0;
             this.boatSpeed = Math.max(10, this.boatSpeed - 8);
             this.totalBendPenalty += 8;
+            Achievements.trackBend('MISSED');
           }
           this.bendActive = false;
           const incompleteBend = this.bends.find(
@@ -246,13 +243,13 @@ const race = {
       }
     }
 
-    // Humid weather — synergy fills slower
     if (this.synergyGauge >= 100) {
       this.boatSpeed = this.maxBoatSpeed;
       this.synergyGauge = 0;
       this.gradeText = 'SYNERGY!';
       this.gradeTimer = 1.0;
       AudioManager.playSFX('synergy');
+      Achievements.trackSynergy();
     }
 
     if (this.distance >= this.maxDistance) {
@@ -263,6 +260,10 @@ const race = {
   },
 
   saveResult() {
+    Achievements.trackRaceFinish(this.maxDistance);
+
+    if (this.freeplayMode) return;
+
     const isFinale = VENUES[STATE.currentVenue] &&
       VENUES[STATE.currentVenue].isFinale;
     const isWorldFinale = STATE.inWorldChamps &&
@@ -274,8 +275,7 @@ const race = {
     if (isFinale || isWorldFinale) {
       const rivals = this.getRivalSpeeds();
       const rivalPositions = rivals.map(r =>
-        20 + (this.rivalDistance * r.speed /
-          this.maxDistance) * 400
+        20 + (this.rivalDistance * r.speed / this.maxDistance) * 400
       );
       const position = rivalPositions.filter(
         rx => rx > this.boatX
@@ -352,6 +352,7 @@ const race = {
     }
 
     STATE.save();
+    Achievements.check();
   },
 
   tap() {
@@ -361,14 +362,12 @@ const race = {
     }
     if (!this.active || this.finished) return;
 
-    // Crosswind — narrower hit window
     const hitZone = 60 + (this.weather === 'crosswind' ?
       this.windOffset : 0);
     const hitRange = this.weather === 'crosswind' ? 28 : 40;
 
     const nearest = this.beats.find(
-      b => !b.hit && !b.missed &&
-        Math.abs(b.x - hitZone) < hitRange
+      b => !b.hit && !b.missed && Math.abs(b.x - hitZone) < hitRange
     );
 
     if (!nearest) {
@@ -378,39 +377,36 @@ const race = {
       this.perfectStreak = 0;
       this.synergyGauge = Math.max(0, this.synergyGauge - 5);
       AudioManager.playSFX('miss');
+      Achievements.trackHit('MISS');
       return;
     }
 
     nearest.hit = true;
     const dist = Math.abs(nearest.x - hitZone);
-    // Crosswind tightens the perfect/great zones
     const perfectThresh = this.weather === 'crosswind' ? 5 : 8;
-    const greatThresh = this.weather === 'crosswind' ? 14 : 20;
+    const greatThresh   = this.weather === 'crosswind' ? 14 : 20;
 
     if (dist < perfectThresh) {
       this.gradeText = 'PERFECT';
-      this.boatSpeed = Math.min(
-        this.maxBoatSpeed, this.boatSpeed + 4);
+      this.boatSpeed = Math.min(this.maxBoatSpeed, this.boatSpeed + 4);
       this.perfectStreak++;
-      // Humid — synergy fills at 70%
       const synergyGain = this.weather === 'humid' ? 10 : 15;
-      this.synergyGauge = Math.min(
-        100, this.synergyGauge + synergyGain);
+      this.synergyGauge = Math.min(100, this.synergyGauge + synergyGain);
       AudioManager.playSFX('perfect');
+      Achievements.trackHit('PERFECT');
     } else if (dist < greatThresh) {
       this.gradeText = 'GREAT';
-      this.boatSpeed = Math.min(
-        this.maxBoatSpeed, this.boatSpeed + 2);
+      this.boatSpeed = Math.min(this.maxBoatSpeed, this.boatSpeed + 2);
       this.perfectStreak++;
       const synergyGain = this.weather === 'humid' ? 5 : 8;
-      this.synergyGauge = Math.min(
-        100, this.synergyGauge + synergyGain);
+      this.synergyGauge = Math.min(100, this.synergyGauge + synergyGain);
       AudioManager.playSFX('great');
+      Achievements.trackHit('GREAT');
     } else {
       this.gradeText = 'OK';
-      this.boatSpeed = Math.min(
-        this.maxBoatSpeed, this.boatSpeed + 1);
+      this.boatSpeed = Math.min(this.maxBoatSpeed, this.boatSpeed + 1);
       this.perfectStreak = 0;
+      Achievements.trackHit('OK');
     }
 
     this.gradeTimer = 0.6;
@@ -476,12 +472,12 @@ const race = {
     const lines = [
       { y:125, col:'#f0c040', text:'Yellow beats scroll right to left.' },
       { y:142, col:'#ffffff', text:'Press SPACE when a beat hits the white line.' },
-      { y:166, col:'#1D9E75', text:'PERFECT  — exactly on the line' },
-      { y:180, col:'#88ddbb', text:'GREAT    — close to the line' },
-      { y:194, col:'#aaaaaa', text:'OK       — near the line' },
-      { y:208, col:'#cc3333', text:'MISS     — too early or too late' },
+      { y:166, col:'#1D9E75', text:'PERFECT  -- exactly on the line' },
+      { y:180, col:'#88ddbb', text:'GREAT    -- close to the line' },
+      { y:194, col:'#aaaaaa', text:'OK       -- near the line' },
+      { y:208, col:'#cc3333', text:'MISS     -- too early or too late' },
       { y:230, col:'#ff9900', text:'Fill SYNERGY for a speed burst!' },
-      { y:254, col:'#f0c040', text:'2000m ONLY — bend mechanic:' },
+      { y:254, col:'#f0c040', text:'2000m ONLY -- bend mechanic:' },
       { y:270, col:'#ffffff', text:'When a bend appears, press Z' },
       { y:284, col:'#ffffff', text:'at the right moment to take' },
       { y:298, col:'#ffffff', text:'a clean line through the corner.' },
@@ -531,13 +527,11 @@ const race = {
     if (this.weather === 'choppy') {
       ctx.fillStyle = 'rgba(100,150,200,0.08)';
       ctx.fillRect(0, 40, 480, 280);
-      // Wave lines
       ctx.strokeStyle = 'rgba(255,255,255,0.06)';
       ctx.lineWidth = 1;
       for (let w = 0; w < 8; w++) {
         ctx.beginPath();
-        const wy = 60 + w * 32 +
-          Math.sin(this.weatherTimer + w) * 3;
+        const wy = 60 + w * 32 + Math.sin(this.weatherTimer + w) * 3;
         ctx.moveTo(0, wy);
         ctx.lineTo(480, wy);
         ctx.stroke();
@@ -546,7 +540,6 @@ const race = {
       ctx.fillStyle = 'rgba(200,150,50,0.06)';
       ctx.fillRect(0, 40, 480, 280);
     } else if (this.weather === 'crosswind') {
-      // Horizontal wind streaks
       ctx.strokeStyle = 'rgba(255,255,255,0.04)';
       ctx.lineWidth = 1;
       for (let w = 0; w < 6; w++) {
@@ -562,9 +555,9 @@ const race = {
     // Weather badge
     if (this.weather) {
       const wLabels = {
-        choppy: '🌊 CHOPPY',
-        humid: '☀ HUMID',
-        crosswind: '💨 CROSSWIND',
+        choppy:    'CHOPPY WATER',
+        humid:     'HOT + HUMID',
+        crosswind: 'CROSSWIND',
       };
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(160, 2, 160, 16);
@@ -572,6 +565,16 @@ const race = {
       ctx.font = '7px monospace';
       ctx.textAlign = 'center';
       ctx.fillText(wLabels[this.weather] || '', 240, 13);
+    }
+
+    // Freeplay badge
+    if (this.freeplayMode) {
+      ctx.fillStyle = 'rgba(29,158,117,0.3)';
+      ctx.fillRect(2, 2, 60, 14);
+      ctx.fillStyle = '#1D9E75';
+      ctx.font = '7px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('FREEPLAY', 32, 12);
     }
 
     // Lane lines
@@ -704,7 +707,7 @@ const race = {
     ctx.textAlign = 'center';
     ctx.fillText('FINISH', 420, 36);
 
-    // Crosswind — moving hit zone indicator
+    // Crosswind moving hit zone
     if (this.weather === 'crosswind' && this.active) {
       const hitZone = 60 + this.windOffset;
       ctx.strokeStyle = 'rgba(100,200,255,0.6)';
@@ -739,9 +742,9 @@ const race = {
     ctx.textAlign = 'right';
     ctx.fillText(Math.floor(this.distance) + 'm', 460, 348);
 
-    // World points tracker
+    // Points tracker
     if (STATE.inWorldChamps) {
-      ctx.fillStyle = '#f0c040';
+      ctx.fillStyle = '#4488ff';
       ctx.font = '8px monospace';
       ctx.textAlign = 'left';
       ctx.fillText('WC: ' + STATE.worldPoints + 'pts', 20, 360);
@@ -750,8 +753,7 @@ const race = {
     // Synergy gauge
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(20, 354, 200, 6);
-    ctx.fillStyle = this.weather === 'humid' ?
-      '#ff9900' : '#f0c040';
+    ctx.fillStyle = this.weather === 'humid' ? '#ff9900' : '#f0c040';
     ctx.fillRect(20, 354, (this.synergyGauge / 100) * 200, 6);
     ctx.fillStyle = '#f0c040';
     ctx.font = '8px monospace';
@@ -769,8 +771,7 @@ const race = {
     ctx.stroke();
 
     this.beats.forEach(b => {
-      ctx.fillStyle = b.hit ? '#1D9E75'
-        : b.missed ? '#555' : '#f0c040';
+      ctx.fillStyle = b.hit ? '#1D9E75' : b.missed ? '#555' : '#f0c040';
       ctx.fillRect(b.x - 6, 378, 12, 16);
     });
 
@@ -778,8 +779,11 @@ const race = {
 
     if (this.gradeTimer > 0) {
       const colours = {
-        'PERFECT':'#f0c040', 'GREAT':'#1D9E75',
-        'OK':'#ffffff', 'MISS':'#cc3333', 'SYNERGY!':'#ff9900',
+        'PERFECT':  '#f0c040',
+        'GREAT':    '#1D9E75',
+        'OK':       '#ffffff',
+        'MISS':     '#cc3333',
+        'SYNERGY!': '#ff9900',
       };
       ctx.fillStyle = colours[this.gradeText] || '#ffffff';
       ctx.font = 'bold 14px monospace';
@@ -789,8 +793,10 @@ const race = {
 
     if (this.bendGradeTimer > 0) {
       const bcols = {
-        'PERFECT LINE':'#1D9E75', 'GOOD LINE':'#f0c040',
-        'WIDE LINE':'#cc3333', 'MISSED BEND!':'#cc3333',
+        'PERFECT LINE': '#1D9E75',
+        'GOOD LINE':    '#f0c040',
+        'WIDE LINE':    '#cc3333',
+        'MISSED BEND!': '#cc3333',
       };
       ctx.fillStyle = bcols[this.bendGradeText] || '#ffffff';
       ctx.font = 'bold 11px monospace';
@@ -818,16 +824,15 @@ const race = {
       ctx.strokeRect(80, 130, 320, 160);
 
       if ((isFinale || isWorldFinale) && this.finishPosition > 0) {
-        const posLabels =
-          ['','1ST','2ND','3RD','4TH','5TH','6TH','7TH'];
+        const posLabels = ['','1ST','2ND','3RD','4TH','5TH','6TH','7TH'];
         const posColour = this.finishPosition === 1 ? '#f0c040'
           : this.finishPosition === 2 ? '#c0c0c0'
           : this.finishPosition === 3 ? '#c08040' : '#aaaaaa';
         ctx.fillStyle = posColour;
         ctx.font = 'bold 18px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(
-          posLabels[this.finishPosition] + ' PLACE', 240, 165);
+        ctx.fillText(posLabels[this.finishPosition] + ' PLACE',
+          240, 165);
         ctx.fillStyle = '#ffffff';
         ctx.font = '10px monospace';
         ctx.fillText('Secklow finish ' +
@@ -862,11 +867,15 @@ const race = {
         'World points: ' : 'Trophy points: ';
       ctx.fillText(ptsLabel + pts, 240, 215);
 
-      if (this.distanceMode === '2000m' &&
-          this.totalBendPenalty > 0) {
+      if (this.freeplayMode) {
+        ctx.fillStyle = '#1D9E75';
+        ctx.font = '8px monospace';
+        ctx.fillText('FREEPLAY — no progress saved', 240, 230);
+      } else if (this.distanceMode === '2000m' &&
+                 this.totalBendPenalty > 0) {
         ctx.fillStyle = '#cc3333';
-        ctx.fillText('Bend penalty: -' +
-          this.totalBendPenalty + ' speed', 240, 230);
+        ctx.fillText('Bend penalty: -' + this.totalBendPenalty +
+          ' speed', 240, 230);
       }
 
       ctx.fillStyle = '#aaaaaa';

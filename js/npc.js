@@ -202,6 +202,7 @@ function updateNPCs(keys, player) {
       activeLineIndex = 0;
       npc.justPressed = true;
       AudioManager.playSFX('dialogue');
+      Achievements.trackNPC(npc.name);
     } else if (keys[' '] && activeNPCIndex === i &&
                !npc.justPressed) {
       activeLineIndex++;

@@ -1,4 +1,5 @@
 const GAME_VERSION = '2.5.0';
+Achievements.load();
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -262,11 +263,17 @@ window.addEventListener('keydown', e => {
   keys[e.key] = true;
   e.preventDefault();
 
-  if (e.key === 'Escape') {
+if (e.key === 'Escape') {
     if (Menu.open) {
       Menu.handleKey('Escape');
     } else if (LeagueTable.open) {
       LeagueTable.close();
+    } else if (Achievements.open) {
+      Achievements.close();
+    } else if (Credits.open) {
+      Credits.close();
+    } else if (Freeplay.open) {
+      Freeplay.close();
     } else if (worldTravelMap.open) {
       worldTravelMap.close();
     } else if (gameStarted && !race.active) {
@@ -276,6 +283,12 @@ window.addEventListener('keydown', e => {
   }
 
   if (Menu.open) { Menu.handleKey(e.key); return; }
+  if (Credits.open) { Credits.handleKey(e.key); return; }
+  if (Achievements.open) {
+    if (e.key === 'Escape') Achievements.close();
+    return;
+  }
+  if (Freeplay.open) { Freeplay.handleKey(e.key); return; }
   if (LeagueTable.open) { return; }
 
   if (e.key === 'l' || e.key === 'L') {
@@ -430,9 +443,14 @@ window.addEventListener('keydown', e => {
     if (race.showTutorial) { race.tap(); return; }
     if (race.active) { race.tap(); return; }
 
-    if (race.finished) {
+if (race.finished) {
       race.finished = false;
-      if (STATE.inWorldChamps) {
+      if (race.freeplayMode) {
+        race.freeplayMode = false;
+        AudioManager.playTrack(
+          AudioManager.getTrackForVenue(STATE.currentVenue)
+        );
+      } else if (STATE.inWorldChamps) {
         AudioManager.playTrack('overworld');
       } else {
         AudioManager.playTrack(
@@ -523,6 +541,8 @@ if (onDock && needsDebrief) {
 window.addEventListener('keyup', e => { keys[e.key] = false; });
 
 function update(deltaTime, timestamp) {
+  Achievements.update(deltaTime);
+  Credits.update(deltaTime);
   if (!gameStarted) return;
   if (Menu.open) return;
   if (LeagueTable.open) return;
@@ -909,6 +929,10 @@ const venueEdge = VENUES[STATE.currentVenue];
   TouchControls.draw(ctx);
   Menu.draw(ctx);
   LeagueTable.draw(ctx);
+  Achievements.drawPopup(ctx);
+  Credits.draw(ctx);
+  Achievements.draw(ctx);
+  Freeplay.draw(ctx);
 }
 
 let lastTime = 0;
