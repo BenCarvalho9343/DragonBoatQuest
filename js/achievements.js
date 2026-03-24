@@ -2,6 +2,7 @@ const Achievements = {
   open: false,
   popupQueue: [],
   currentPopup: null,
+  scrollY: 0,
   popupTimer: 0,
   popupDuration: 3.0,
 
@@ -343,6 +344,23 @@ const Achievements = {
   toggle() { this.open = !this.open; },
   close()  { this.open = false; },
 
+handleKey(key) {
+    if (!this.open) return;
+    if (key === 'ArrowDown') this.scrollY += 26;
+    if (key === 'ArrowUp') this.scrollY = Math.max(0, this.scrollY - 26);
+    if (key === 'Escape') this.close();
+  },
+
+  close() {
+    this.open = false;
+    this.scrollY = 0;
+  },
+
+  toggle() {
+    this.open = !this.open;
+    this.scrollY = 0;
+  },
+
   draw(ctx) {
     if (!this.open) return;
 
@@ -372,6 +390,7 @@ const Achievements = {
     ctx.lineTo(440, 64);
     ctx.stroke();
 
+    // Build display list
     const visible = this.list.filter(a => a.unlocked || !a.secret);
     const secretCount = this.list.filter(
       a => !a.unlocked && a.secret).length;
@@ -388,13 +407,19 @@ const Achievements = {
       });
     }
 
+    // Clip scrollable area
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(20, 66, 440, 340);
+    ctx.clip();
+
     display.forEach((a, i) => {
-      if (i >= 14) return;
-      const ay = 72 + i * 24;
+      const ay = 72 + i * 26 - this.scrollY;
+      if (ay < 60 || ay > 410) return;
 
       if (a.unlocked) {
         ctx.fillStyle = 'rgba(240,192,64,0.08)';
-        ctx.fillRect(28, ay - 2, 424, 20);
+        ctx.fillRect(28, ay - 2, 424, 22);
       }
 
       ctx.fillStyle = a.unlocked ? '#f0c040' : '#333';
@@ -418,9 +443,24 @@ const Achievements = {
       }
     });
 
+    ctx.restore();
+
+    // Fade top and bottom
+    const fadeTop = ctx.createLinearGradient(0, 64, 0, 90);
+    fadeTop.addColorStop(0, '#0a0a1a');
+    fadeTop.addColorStop(1, 'rgba(10,10,26,0)');
+    ctx.fillStyle = fadeTop;
+    ctx.fillRect(20, 64, 440, 26);
+
+    const fadeBot = ctx.createLinearGradient(0, 376, 0, 406);
+    fadeBot.addColorStop(0, 'rgba(10,10,26,0)');
+    fadeBot.addColorStop(1, '#0a0a1a');
+    ctx.fillStyle = fadeBot;
+    ctx.fillRect(20, 376, 440, 30);
+
     ctx.fillStyle = '#333';
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('[ Esc ] close', 240, 402);
+    ctx.fillText('[ up/down ] scroll    [ Esc ] close', 240, 402);
   },
 };

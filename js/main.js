@@ -1,4 +1,4 @@
-const GAME_VERSION = '2.5.0';
+const GAME_VERSION = '2.6.1';
 Achievements.load();
 
 const canvas = document.getElementById('gameCanvas');
@@ -285,7 +285,7 @@ if (e.key === 'Escape') {
   if (Menu.open) { Menu.handleKey(e.key); return; }
   if (Credits.open) { Credits.handleKey(e.key); return; }
   if (Achievements.open) {
-    if (e.key === 'Escape') Achievements.close();
+    Achievements.handleKey(e.key);
     return;
   }
   if (Freeplay.open) { Freeplay.handleKey(e.key); return; }
