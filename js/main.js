@@ -1,4 +1,4 @@
-const GAME_VERSION = '2.6.1';
+const GAME_VERSION = '2.6.2';
 Achievements.load();
 
 const canvas = document.getElementById('gameCanvas');
