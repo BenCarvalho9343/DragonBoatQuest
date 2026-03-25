@@ -1,6 +1,5 @@
 const GAME_VERSION = '2.6.2';
-Achievements.load();
-
+Achievements.load();STATE.startNewPlaythrough();
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
@@ -148,6 +147,72 @@ function drawWorldTransition(ctx) {
   ctx.fillText('[ Space ] begin World Championships', 240, 360);
 }
 
+function drawRebirthConfirmDialog(ctx) {
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillRect(0, 0, 480, 432);
+
+  ctx.fillStyle = '#0a0a1a';
+  ctx.fillRect(90, 140, 300, 160);
+  ctx.strokeStyle = '#ff6666';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(90, 140, 300, 160);
+
+  ctx.fillStyle = '#ff6666';
+  ctx.font = 'bold 12px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('CONFIRM REBIRTH?', 240, 170);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '9px monospace';
+  ctx.fillText('All progress will reset.', 240, 192);
+  ctx.fillText('Achievements will be preserved.', 240, 206);
+
+  // Confirm/Cancel buttons
+  const selY = 235;
+  const buttonW = 80;
+  const buttonH = 30;
+
+  // Confirm button
+  ctx.fillStyle = Menu.rebirthConfirmSelection === 0 ? '#ff8888' : '#666666';
+  ctx.fillRect(110, selY, buttonW, buttonH);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 10px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('CONFIRM', 150, selY + 20);
+
+  // Cancel button
+  ctx.fillStyle = Menu.rebirthConfirmSelection === 1 ? '#88ff88' : '#666666';
+  ctx.fillRect(290, selY, buttonW, buttonH);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('CANCEL', 330, selY + 20);
+
+  ctx.fillStyle = '#666';
+  ctx.font = '8px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('Arrow keys to select  •  Space to confirm', 240, 285);
+}
+
+function drawRebirthLockedMessage(ctx) {
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0, 0, 480, 432);
+
+  ctx.fillStyle = '#0a0a1a';
+  ctx.fillRect(100, 160, 280, 110);
+  ctx.strokeStyle = '#ff6666';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(100, 160, 280, 110);
+
+  ctx.fillStyle = '#ff6666';
+  ctx.font = 'bold 12px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('REBIRTH LOCKED', 240, 185);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '9px monospace';
+  ctx.fillText('Complete the World Championships', 240, 208);
+  ctx.fillText('to unlock rebirth.', 240, 222);
+}
+
 function drawCeremony(ctx) {
   const ending = STATE.getLondonEnding();
   const wins = STATE.getLondonWins();
@@ -264,7 +329,9 @@ window.addEventListener('keydown', e => {
   e.preventDefault();
 
 if (e.key === 'Escape') {
-    if (Menu.open) {
+    if (RebirthStats.open) {
+      RebirthStats.handleKey('Escape');
+    } else if (Menu.open) {
       Menu.handleKey('Escape');
     } else if (LeagueTable.open) {
       LeagueTable.close();
@@ -289,6 +356,7 @@ if (e.key === 'Escape') {
     return;
   }
   if (Freeplay.open) { Freeplay.handleKey(e.key); return; }
+  if (RebirthStats.open) { RebirthStats.handleKey(e.key); return; }
   if (LeagueTable.open) { return; }
 
   if (e.key === 'l' || e.key === 'L') {
@@ -302,6 +370,13 @@ if (e.key === 'Escape') {
 
   if (e.key === '`') {
     AudioManager.toggleMute();
+    return;
+  }
+
+  if (e.key === 'r' || e.key === 'R') {
+    if (Menu.open && !Menu.showingRebirthConfirm && STATE.rebirths > 0) {
+      RebirthStats.toggle();
+    }
     return;
   }
 
@@ -402,6 +477,8 @@ if (e.key === 'Escape') {
         STATE.worldFinalStage === 'complete' &&
         !race.active && !race.finished) {
       STATE.worldFinalStage = 'done';
+      STATE.rebirthUnlocked = true;
+      STATE.finishPlaythrough();
       STATE.save();
       return;
     }
@@ -543,6 +620,15 @@ window.addEventListener('keyup', e => { keys[e.key] = false; });
 function update(deltaTime, timestamp) {
   Achievements.update(deltaTime);
   Credits.update(deltaTime);
+  
+  // Update rebirth locked message timer
+  if (Menu.rebirthLockedMessage) {
+    Menu.rebirthLockedTimer -= deltaTime;
+    if (Menu.rebirthLockedTimer <= 0) {
+      Menu.rebirthLockedMessage = false;
+    }
+  }
+  
   if (!gameStarted) return;
   if (Menu.open) return;
   if (LeagueTable.open) return;
@@ -933,6 +1019,15 @@ const venueEdge = VENUES[STATE.currentVenue];
   Credits.draw(ctx);
   Achievements.draw(ctx);
   Freeplay.draw(ctx);
+  RebirthStats.draw(ctx);
+  
+  // Draw rebirth dialogs
+  if (Menu.rebirthLockedMessage) {
+    drawRebirthLockedMessage(ctx);
+  }
+  if (Menu.showingRebirthConfirm) {
+    drawRebirthConfirmDialog(ctx);
+  }
 }
 
 let lastTime = 0;

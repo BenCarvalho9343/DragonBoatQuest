@@ -2,6 +2,10 @@ const Menu = {
   open: false,
   selectedOption: 0,
   confirmingRestart: false,
+  showingRebirthConfirm: false,
+  rebirthConfirmSelection: 1,
+  rebirthLockedMessage: false,
+  rebirthLockedTimer: 0,
 
   options: [
     { label: 'Resume',       action: 'resume'       },
@@ -11,6 +15,7 @@ const Menu = {
     { label: 'League table', action: 'league'       },
     { label: 'Music volume', action: 'music'        },
     { label: 'SFX volume',   action: 'sfx'          },
+    { label: 'Rebirth',      action: 'rebirth'      },
     { label: 'Restart game', action: 'restart'      },
   ],
 
@@ -42,6 +47,11 @@ const Menu = {
 
   handleKey(key) {
     if (!this.open) return;
+
+    if (this.showingRebirthConfirm) {
+      this.handleRebirthConfirm(key);
+      return;
+    }
 
     if (this.confirmingRestart) {
       if (key === 'ArrowLeft' || key === 'ArrowRight') {
@@ -119,9 +129,51 @@ const Menu = {
       this.open = false;
       this.confirmingRestart = false;
     }
+    if (opt.action === 'rebirth') {
+      this.showRebirthMenu();
+    }
     if (opt.action === 'restart') {
       this.confirmingRestart = true;
       this.selectedOption = 1;
+    }
+  },
+
+  showRebirthMenu() {
+    // If already rebirthed before, always allow access to stats
+    if (STATE.rebirths > 0) {
+      this.close();
+      RebirthStats.open = true;
+      RebirthStats.scrollY = 0;
+      return;
+    }
+    
+    // First rebirth - check if unlocked
+    if (!STATE.rebirthUnlocked) {
+      this.rebirthLockedMessage = true;
+      this.rebirthLockedTimer = 3.0;
+      return;
+    }
+    
+    // First rebirth - show confirmation dialog
+    this.showingRebirthConfirm = true;
+    this.rebirthConfirmSelection = 1;
+  },
+
+  handleRebirthConfirm(key) {
+    if (key === 'ArrowLeft' || key === 'ArrowRight') {
+      this.rebirthConfirmSelection = this.rebirthConfirmSelection === 0 ? 1 : 0;
+    }
+    if (key === ' ' || key === 'Enter') {
+      if (this.rebirthConfirmSelection === 0) {
+        STATE.rebirth();
+        gameStarted = false;
+        location.reload();
+      } else {
+        this.showingRebirthConfirm = false;
+      }
+    }
+    if (key === 'Escape') {
+      this.showingRebirthConfirm = false;
     }
   },
 
