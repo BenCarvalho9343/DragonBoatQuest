@@ -1,4 +1,4 @@
-const GAME_VERSION = '2.7.0';
+const GAME_VERSION = '2.7.2';
 Achievements.load();STATE.startNewPlaythrough();
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');

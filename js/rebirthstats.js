@@ -40,6 +40,11 @@ const RebirthStats = {
   draw(ctx) {
     if (!this.open) return;
 
+    // Reset canvas state
+    ctx.restore();
+    ctx.save();
+    ctx.resetTransform();
+
     // Dark overlay
     ctx.fillStyle = 'rgba(0,0,0,0.88)';
     ctx.fillRect(0, 0, 480, 432);

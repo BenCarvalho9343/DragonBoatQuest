@@ -180,6 +180,11 @@ const Menu = {
   draw(ctx) {
     if (!this.open) return;
 
+    // Reset canvas state
+    ctx.restore();
+    ctx.save();
+    ctx.resetTransform();
+
     ctx.fillStyle = 'rgba(0,0,0,0.75)';
     ctx.fillRect(0, 0, 480, 432);
 
