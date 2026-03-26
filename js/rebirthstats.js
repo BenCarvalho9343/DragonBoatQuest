@@ -21,6 +21,10 @@ const RebirthStats = {
       this.scrollY += 20;
     }
     if (key === 'r' || key === 'R') {
+      // Check if rebirth is unlocked before allowing
+      if (!STATE.rebirthUnlocked) {
+        return; // Don't allow rebirth, game not completed yet
+      }
       // Trigger rebirth
       Menu.open = true;
       RebirthStats.open = false;
@@ -112,23 +116,30 @@ const RebirthStats = {
 
     ctx.restore();
 
-    // Rebirth button
+    // Rebirth button - only show if rebirth is unlocked
     const buttonWidth = 100;
     const buttonHeight = 24;
     const buttonX = 240 - buttonWidth / 2;
     const buttonY = 400;
     
-    ctx.fillStyle = '#1D9E75';
-    ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
-    
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 11px monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('[ R ] REBIRTH', 240, buttonY + buttonHeight / 2);
+    if (STATE.rebirthUnlocked) {
+      ctx.fillStyle = '#1D9E75';
+      ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('[ R ] REBIRTH', 240, buttonY + buttonHeight / 2);
+    } else {
+      ctx.fillStyle = '#666666';
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Complete the game to rebirth', 240, buttonY + 12);
+    }
     
     // Instructions
     ctx.fillStyle = '#666';
