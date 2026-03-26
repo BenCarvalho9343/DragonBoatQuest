@@ -18,7 +18,7 @@ That is exactly what this game is.
 
 The entire game was built from scratch with no engine, no framework, and no prior game development experience — just HTML5 Canvas, JavaScript, and a lot of determination. It started as a single HTML file and grew into a complete two-act RPG with a full National League season, a World Championships postgame, pixel art characters with walking animations, a rhythm race mechanic, weather effects, achievements, freeplay mode, mobile touch controls, and more.
 
-The game was shared with the Secklow club and received an enthusiastic response — particularly from **Ada**, a real paddler for Soaring Dragons who appears as an NPC in the Loughborough venue, and who was delighted to discover herself in the game.
+The game was shared with the Secklow club and received an enthusiastic response.
 
 ---
 
@@ -185,7 +185,7 @@ There are 19 achievements including 9 secret ones:
 
 **Crew** — Lesley, Marcus, Todd, Dan, Naomi, Tom, Rachel, Jason, Ben, Brendan, Marlee, Amelia, Liz, Steve
 
-**Characters** — Coach Tim (based on no one in particular), Ada (Soaring Dragons — real paddler, real legend)
+**Characters** — Coach Tim (based on no one in particular), Ada (Soaring Dragons — real paddler)
 
 **Rival clubs** — Soaring Dragons (Loughborough), Notts Anaconda (Nottingham), St Neots Dragon Boat Trust (St Neots), Powerhouse Dragons (Middlesbrough), Amathus (Liverpool), Thames Valley Dragons (London)
 
